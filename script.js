@@ -10,6 +10,7 @@
 	* Initiates user comment blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedObject", function(event) {
+		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) return;
 		bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
 	
 		// Go through each user and add a class to hide if matching
@@ -110,10 +111,66 @@
 		window.dispatchEvent(new CustomEvent("GetObject", { "detail": "RedditPlus_BlockedUserForComments"}));
 	});
 	
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ))
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
+/** 
+ * User Tagging
+ */
+(function ( redditBuddy, $, undefined) {
+	
+	var userTags = {};
+	
+	/**
+	* Initiates user tagging upon receiving the user tags list from storage.
+	*/
+	window.addEventListener("RetrievedNameTags", function(event) {
+		if (event.detail.hasOwnProperty("RedditBuddy_NameTags")) {
+			userTags = event.detail["RedditBuddy_NameTags"];
+		}
+		
+		// Go through each user and add their tag (if it exists)
+		$("*[data-type='comment']").each(function( index ) {
+			console.log("Adding for each comment");
+			
+			var user = $(this).children(".entry").children(".tagline").children(".author").text();
+			if (userTags != null && userTags.hasOwnProperty(user)) {
+				var tagName = userTags[user];
+				$(this).children(".entry").children(".tagline").children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
+			}
+			
+			// Also add a tagging button
+			$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='addTagName' style='margin-left: 5px;' data-username='" + user + "'>" + "add tag" + "</a>");
+		});
+	});
+	
+	/**
+	* Add click listener for tagging a user.
+	*/
+	$(document).on("click", ".addTagName", function() {
+		console.log("Tagging user");
+		var userName = $(this).attr("data-username");
+		var tag = prompt("Please enter desired tag for user '" + userName + "'","");
+		
+		// Save Tag
+		userTags[userName] = tag;
+		var tagsList = {}; 
+		tagsList["RedditBuddy_NameTags"] = userTags;
+		window.dispatchEvent(new CustomEvent("StoreNameTags", { "detail": tagsList }));
+		
+		// TODO: Update tag (only works on refresh currently)
+	});
 
+	/**
+	* Upon loading, initiates events with onLoad.js that load name tagging functionality.
+	*/
+	$(document).ready(function() {
+		console.log("Loading name tagging");
+		
+		// When page loads, initiate event to get banned users list and collapse all comments by those users
+		window.dispatchEvent(new CustomEvent("GetNameTags"));
+	});
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
 
