@@ -1,45 +1,12 @@
-// Applies a CSS style rule to the provided stylesheet
-/*function applyStyleToSheet(stylesheet, css) {
-	if (style.styleSheet) {
-		style.styleSheet.cssText += css;
-	} else {
-		style.appendChild(document.createTextNode(css));
-	}
-}
-
-// Create a universal stylesheet
-var css = "",
-	head = document.head || document.getElementsByTagName('head')[0],
-	style = document.createElement("style");
-style.type = 'text/css';
-head.appendChild(style);*/
-
-////////////////// Hover picture load //////////////////
-/*function createFloatingImage(href) {
-	$("body").append("<div class='image_hover' style='position:absolute; top: 0; left: 0;'><img src=" + href + " style='width: 10%;'></img>Test</div>");
-}
-
-// Todo: Have it so that the hoving image 1) never covers up with link and 2) follows the mouse and 3) is always visible (either above or below the link)
-$("a").hover( 
-	function() {
-		// Check if the link is a supported img type
-		var href = $(this).attr("href");
-		if (href.endsWith(".jpg")) {
-			console.log("hovering over jpg image");
-			createFloatingImage(href);
-		}
-	}, 
-	function() {
-		var href = $(this).attr("href");
-		if (href.endsWith(".jpg")) {
-			console.log("removing hovering over jpg image");
-			$(".image_hover").remove();
-		}
-	}
-);*/
-
+////////////////////////////////////////////////////////////
 ////////////////// User Comments Blocking //////////////////
+////////////////////////////////////////////////////////////
+
 var bannedUsers = [];
+
+/**
+ * Initiates user comment blocking upon receiving the banned users list from storage.
+ */
 window.addEventListener("RetrievedObject", function(event) {
 	bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
   
@@ -64,21 +31,30 @@ window.addEventListener("RetrievedObject", function(event) {
 	});
 }, false);
 
-// Add click listeners for blocking users
+/**
+ * Add click listener for blocking a user's comments.
+ */
 $(document).on("click", ".unblockUserComments", function() {
 	// Block the user
 	console.log("Unblocking user");
 	blockOrUnblockUserComments(this, bannedUsers, false);
 });
 
-// Add click listeners for unblocking users
+/**
+ * Add click listener for unblocking a user's comments.
+ */
 $(document).on("click", ".blockUserComments", function() {
 	// Unblock the user
 	console.log("Blocking user");
 	blockOrUnblockUserComments(this, bannedUsers, true);
 });
 
-
+/**
+ * Blocks or unblocks a user's comments based on parameters.
+ * @param {object} thisElement The element of the comment.
+ * @param {array} bannedUsers An array of banned users.
+ * @param {bool} isBlocking Whether to block or not the user's comments.
+ */
 function blockOrUnblockUserComments(thisElement, bannedUsers, isBlocking) {
 	var blockingClass;
 	if (!isBlocking) {
@@ -124,6 +100,9 @@ function blockOrUnblockUserComments(thisElement, bannedUsers, isBlocking) {
 	}
 }
 
+/**
+ * Upon loading, initiates events with onLoad.js that load comment blocking functionality.
+ */
 $(document).ready(function() {
 	// When page loads, initiate event to get banned users list and collapse all comments by those users
 	window.dispatchEvent(new CustomEvent("GetObject", { "detail": "RedditPlus_BlockedUserForComments"}));
