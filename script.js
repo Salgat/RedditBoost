@@ -63,20 +63,20 @@ window.addEventListener("RetrievedObject", function(event) {
 	// Add option to block or unblock a user
 	$("*[data-type='comment']").each(function( index ) {
 		console.log("Iterating through comment");
-		var user = "salgat";
-		if (bannedUsers != null && bannedUsers.indexOf($(this).find(".author").text()) >= 0) {
+		var user = $(this).children(".entry").children(".tagline").children(".author").text();
+		if (bannedUsers != null && bannedUsers.indexOf($(this).children(".entry").children(".tagline").children(".author").text()) >= 0) {
 			// Hide (not banned yet)
-			$(this).find(".tagline").append("<a href='javascript:void(0)' class='unblockUserComments' style='margin-left: 5px;' data-username='" + user + "'>" + "unhide user comments" + "</a>");
+			$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='unblockUserComments' style='margin-left: 5px;' data-username='" + user + "'>" + "unhide user comments" + "</a>");
 		} else {
 			// Unhide (banned)
-			$(this).find(".tagline").append("<a href='javascript:void(0)' class='blockUserComments' style='margin-left: 5px;' data-username='" + user + "'>" + "hide user comments" + "</a>");
+			$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='blockUserComments' style='margin-left: 5px;' data-username='" + user + "'>" + "hide user comments" + "</a>");
 		}
 	});
 	
 	
 }, false);
 
-// Add click listeners for unblocking/blocking users
+// Add click listeners for blocking users
 $(document).on("click", ".unblockUserComments", function() {
 	// Unblock the user
 	console.log("Unblocking user");
@@ -89,13 +89,20 @@ $(document).on("click", ".unblockUserComments", function() {
 		var bannedList = {}; 
 		bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
 		window.dispatchEvent(new CustomEvent("StoreObject", { "detail": bannedList }));
-		$(this).removeClass("unblockUserComments").addClass("blockUserComments");
-		$(this).text("hide user comments");
-		$(this).parent().parent().parent().removeClass("collapsed").addClass("noncollapsed");
+		
+		// Remove collapsed for all comments of this user
+		$("*[data-type='comment']").each(function( index ) {
+			if ($(this).children(".entry").children(".tagline").children(".author").text() == userToUnban) {
+				var textElement = $(this).children(".entry").children(".tagline").children(".unblockUserComments");
+				textElement.text("hide user comments");
+				textElement.removeClass("unblockUserComments").addClass("blockUserComments");
+				$(this).removeClass("collapsed").addClass("noncollapsed");
+			}
+		});
 	}
 });
 
-// Add click listeners for unblocking/blocking users
+// Add click listeners for unblocking users
 $(document).on("click", ".blockUserComments", function() {
 	// Unblock the user
 	console.log("Blocking user");
@@ -108,9 +115,16 @@ $(document).on("click", ".blockUserComments", function() {
 		var bannedList = {}; 
 		bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
 		window.dispatchEvent(new CustomEvent("StoreObject", { "detail": bannedList }));
-		$(this).removeClass("blockUserComments").addClass("unblockUserComments");
-		$(this).text("unhide user comments");
-		$(this).parent().parent().parent().removeClass("noncollapsed").addClass("collapsed");
+		
+		// Add collapsed for all comments of this user
+		$("*[data-type='comment']").each(function( index ) {
+			if ($(this).children(".entry").children(".tagline").children(".author").text() == userToUnban) {
+				var textElement = $(this).children(".entry").children(".tagline").children(".blockUserComments");
+				textElement.text("show user comments");
+				textElement.removeClass("blockUserComments").addClass("unblockUserComments");
+				$(this).removeClass("noncollapsed").addClass("collapsed");
+			}
+		});
 	}
 });
 
