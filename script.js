@@ -9,7 +9,7 @@
 	/**
 	* Initiates user comment blocking upon receiving the banned users list from storage.
 	*/
-	window.addEventListener("RetrievedObject", function(event) {
+	window.addEventListener("RetrievedCommentBans", function(event) {
 		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) return;
 		bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
 	
@@ -39,7 +39,6 @@
 	*/
 	$(document).on("click", ".unblockUserComments", function() {
 		// Block the user
-		console.log("Unblocking user");
 		blockOrUnblockUserComments(this, bannedUsers, false);
 	});
 	
@@ -48,7 +47,6 @@
 	*/
 	$(document).on("click", ".blockUserComments", function() {
 		// Unblock the user
-		console.log("Blocking user");
 		blockOrUnblockUserComments(this, bannedUsers, true);
 	});
 	
@@ -84,7 +82,7 @@
 			}
 			var bannedList = {}; 
 			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
-			window.dispatchEvent(new CustomEvent("StoreObject", { "detail": bannedList }));
+			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 			
 			$("*[data-type='comment']").each(function( index, thisComment ) {
 				if ($(thisComment).children(".entry").children(".tagline").children(".author").text() == userToChange) {
@@ -108,7 +106,7 @@
 	*/
 	$(document).ready(function() {
 		// When page loads, initiate event to get banned users list and collapse all comments by those users
-		window.dispatchEvent(new CustomEvent("GetObject", { "detail": "RedditPlus_BlockedUserForComments"}));
+		window.dispatchEvent(new CustomEvent("GetCommentBans"));
 	});
 	
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
@@ -116,6 +114,8 @@
 
 /** 
  * User Tagging
+ * TODO: Need to change "add tag" to "update tag" if it already exists
+ * TODO2: Add a background to each item to distinguish them all
  */
 (function ( redditBuddy, $, undefined) {
 	
