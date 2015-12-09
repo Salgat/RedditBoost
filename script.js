@@ -130,8 +130,6 @@
 		
 		// Go through each user and add their tag (if it exists)
 		$("*[data-type='comment']").each(function( index ) {
-			console.log("Adding for each comment");
-			
 			var user = $(this).children(".entry").children(".tagline").children(".author").text();
 			var addText = "add tag";
 			if (userTags != null && userTags.hasOwnProperty(user)) {
@@ -150,7 +148,6 @@
 	* Add click listener for tagging a user.
 	*/
 	$(document).on("click", ".addTagName", function() {
-		console.log("Tagging user");
 		var userName = $(this).attr("data-username");
 		var tag = prompt("Please enter desired tag for user '" + userName + "'\n\nNOTE: Leave empty to remove tag.","");
 		
@@ -167,8 +164,29 @@
 			tagsList["RedditBuddy_NameTags"] = userTags;
 			window.dispatchEvent(new CustomEvent("StoreNameTags", { "detail": tagsList }));	
 		
-			// TODO: Update tag (only works on refresh currently)
-			
+			// Go through each user and add their tag (if it exists)
+			$("*[data-type='comment']").each(function( index ) {
+				var user = $(this).children(".entry").children(".tagline").children(".author").text();
+				if (user == userName) {
+					var tagName = userTags[user];
+					if (tag == "") {
+						// Remove tag
+						$(this).children(".entry").children(".tagline").children('.userTag').remove();
+					} else if ($(this).children(".entry").children(".tagline").children('.userTag').length) {
+						$(this).children(".entry").children(".tagline").children('.userTag').text(tagName);
+					} else {
+						$(this).children(".entry").children(".tagline").children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
+					}
+				
+					var addText = "update tag";
+					if (tag == "") {
+						addText = "add tag";
+					}
+				
+					// Also update the tagging button
+					$(this).children(".entry").children(".tagline").children(".addTagName").text(addText);
+				}
+			});
 		}
 	});
 
@@ -176,8 +194,6 @@
 	* Upon loading, initiates events with onLoad.js that load name tagging functionality.
 	*/
 	$(document).ready(function() {
-		console.log("Loading name tagging");
-		
 		// When page loads, initiate event to get banned users list and collapse all comments by those users
 		window.dispatchEvent(new CustomEvent("GetNameTags"));
 	});
