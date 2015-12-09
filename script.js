@@ -134,13 +134,16 @@
 			console.log("Adding for each comment");
 			
 			var user = $(this).children(".entry").children(".tagline").children(".author").text();
+			var addText = "add tag";
 			if (userTags != null && userTags.hasOwnProperty(user)) {
 				var tagName = userTags[user];
 				$(this).children(".entry").children(".tagline").children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
+				
+				addText = "update tag";
 			}
 			
 			// Also add a tagging button
-			$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='addTagName' style='margin-left: 5px;' data-username='" + user + "'>" + "add tag" + "</a>");
+			$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='addTagName' style='margin-left: 5px;' data-username='" + user + "'>" + addText + "</a>");
 		});
 	});
 	
