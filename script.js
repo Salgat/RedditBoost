@@ -114,7 +114,6 @@
 
 /** 
  * User Tagging
- * TODO: Need to change "add tag" to "update tag" if it already exists
  * TODO2: Add a background to each item to distinguish them all
  */
 (function ( redditBuddy, $, undefined) {
@@ -153,15 +152,24 @@
 	$(document).on("click", ".addTagName", function() {
 		console.log("Tagging user");
 		var userName = $(this).attr("data-username");
-		var tag = prompt("Please enter desired tag for user '" + userName + "'","");
+		var tag = prompt("Please enter desired tag for user '" + userName + "'\n\nNOTE: Leave empty to remove tag.","");
 		
 		// Save Tag
-		userTags[userName] = tag;
-		var tagsList = {}; 
-		tagsList["RedditBuddy_NameTags"] = userTags;
-		window.dispatchEvent(new CustomEvent("StoreNameTags", { "detail": tagsList }));
+		if (tag != null) {
+			if (tag == "") {
+				// Empty string, remove tag
+				delete userTags[userName];
+			} else {
+				userTags[userName] = tag;
+			}
+			
+			var tagsList = {}; 
+			tagsList["RedditBuddy_NameTags"] = userTags;
+			window.dispatchEvent(new CustomEvent("StoreNameTags", { "detail": tagsList }));	
 		
-		// TODO: Update tag (only works on refresh currently)
+			// TODO: Update tag (only works on refresh currently)
+			
+		}
 	});
 
 	/**
