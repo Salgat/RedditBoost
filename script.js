@@ -24,15 +24,26 @@
 		// Add option to block or unblock a user
 		$("*[data-type='comment']").each(function( index ) {
 			var user = $(this).children(".entry").children(".tagline").children(".author").text();
+			var tagline = $(this).children(".entry").children(".tagline");
 			if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
 				// Unhide
-				$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='unblockUserComments' style='margin-left: 5px;' data-username='" + user + "'>" + "show user comments" + "</a>");
+				tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
 			} else {
 				// Hide
-				$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='blockUserComments' style='margin-left: 5px;' data-username='" + user + "'>" + "hide user comments" + "</a>");
+				tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
 			}
 		});
 	}, false);
+	
+	/**
+	 * Return span element HTML to append to tagline for showing or hiding comments.
+	 * @param {string} userName The username this element belongs to
+	 * @param {string} classToAdd The class to add (either blockUserComments or unblockUserComments)
+	 * @param {string} textToAdd The text displayed to the user to click
+	 */
+	function tagLineSpan(userName, classToAdd, textToAdd) {
+		return "<a href='javascript:void(0)' class='" + classToAdd + "' style='margin-left: 5px;' data-username='" + userName + "'>" + textToAdd + "</a>";
+	}
 	
 	/**
 	* Add click listener for blocking a user's comments.
@@ -132,15 +143,15 @@
 		$("*[data-type='comment']").each(function( index ) {
 			var user = $(this).children(".entry").children(".tagline").children(".author").text();
 			var addText = "add tag";
+			var tagline = $(this).children(".entry").children(".tagline");
 			if (userTags != null && userTags.hasOwnProperty(user)) {
 				var tagName = userTags[user];
-				$(this).children(".entry").children(".tagline").children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
-				
+				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
 				addText = "update tag";
 			}
 			
 			// Also add a tagging button
-			$(this).children(".entry").children(".tagline").append("<a href='javascript:void(0)' class='addTagName' style='margin-left: 5px;' data-username='" + user + "'>" + addText + "</a>");
+			tagline.append("<a href='javascript:void(0)' class='addTagName' style='margin-left: 5px;' data-username='" + user + "'>" + addText + "</a>");
 		});
 	});
 	
@@ -166,16 +177,17 @@
 		
 			// Go through each user and add their tag (if it exists)
 			$("*[data-type='comment']").each(function( index ) {
-				var user = $(this).children(".entry").children(".tagline").children(".author").text();
+				var tagline = $(this).children(".entry").children(".tagline");
+				var user = tagline.children(".author").text();
 				if (user == userName) {
 					var tagName = userTags[user];
 					if (tag == "") {
 						// Remove tag
-						$(this).children(".entry").children(".tagline").children('.userTag').remove();
-					} else if ($(this).children(".entry").children(".tagline").children('.userTag').length) {
-						$(this).children(".entry").children(".tagline").children('.userTag').text(tagName);
+						tagline.children('.userTag').remove();
+					} else if (tagline.children('.userTag').length) {
+						tagline.children('.userTag').text(tagName);
 					} else {
-						$(this).children(".entry").children(".tagline").children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
+						tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
 					}
 				
 					var addText = "update tag";
@@ -184,7 +196,7 @@
 					}
 				
 					// Also update the tagging button
-					$(this).children(".entry").children(".tagline").children(".addTagName").text(addText);
+					tagline.children(".addTagName").text(addText);
 				}
 			});
 		}
