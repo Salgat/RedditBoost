@@ -1,0 +1,15 @@
+.redditBuddyTaglineEntry {
+	background-color: #e3e3e3;
+	color: #494949 !important;
+	/*border: 1px solid gray;*/
+	border-radius: 3px;
+	margin-right: 5px;
+	font-size: xx-small;
+	padding: 1px 3px;
+}
+
+.collapsed .redditBuddyTaglineEntry {
+	/* This is due to the white space disappearing when collapsed */
+	margin-left: 5px;
+	margin-right: 0;
+}

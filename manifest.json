@@ -9,9 +9,10 @@
   "content_scripts": [
     {
       "matches": ["http://www.reddit.com/r/*", "https://www.reddit.com/r/*"],
-      "js": ["jquery-2.1.4.min.js", "onLoad.js"]
+      "css": ["styles.css"],
+      "js": ["onLoad.js"]
     }
   ],
   "manifest_version": 2,
-  "web_accessible_resources": ["script.js", "jquery-2.1.4.min.js"]
+  "web_accessible_resources": ["script.js"]
 }

@@ -1,9 +1,15 @@
+/**
+ * Common functionality
+ */
 (function ( redditBuddy, $, undefined) {
-	
-	////////////////////////////////////////////////////////////
-	////////////////// User Comments Blocking //////////////////
-	////////////////////////////////////////////////////////////
-	
+	//$('head').append('<link rel="stylesheet" href="style2.css" type="text/css" />');
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+
+
+/**
+ * User's comment banning
+ */
+(function ( redditBuddy, $, undefined) {
 	var bannedUsers = [];
 	
 	/**
@@ -42,7 +48,7 @@
 	 * @param {string} textToAdd The text displayed to the user to click
 	 */
 	function tagLineSpan(userName, classToAdd, textToAdd) {
-		return "<a href='javascript:void(0)' class='" + classToAdd + "' style='margin-left: 5px;' data-username='" + userName + "'>" + textToAdd + "</a>";
+		return "<a href='javascript:void(0)' class='" + classToAdd + " redditBuddyTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
 	}
 	
 	/**
@@ -125,10 +131,8 @@
 
 /** 
  * User Tagging
- * TODO2: Add a background to each item to distinguish them all
  */
 (function ( redditBuddy, $, undefined) {
-	
 	var userTags = {};
 	
 	/**
@@ -151,7 +155,7 @@
 			}
 			
 			// Also add a tagging button
-			tagline.append("<a href='javascript:void(0)' class='addTagName' style='margin-left: 5px;' data-username='" + user + "'>" + addText + "</a>");
+			tagline.append("<a href='javascript:void(0)' class='redditBuddyTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
 		});
 	});
 	
