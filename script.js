@@ -135,6 +135,42 @@
 (function ( redditBuddy, $, undefined) {
 	var userTags = {};
 	
+	var tagHtmlPopup = "<div id='taggingPopup'>																								\
+							<h3 id='taggingTitle'>Tag {username}</h3>																		\
+							<div id='taggingContents'>																						\
+								<form name='taggingForm' action='javascript:void(0)'>														\
+									<label>Tag</label>																						\
+									<input id='tagInput' type='text'></input><br>															\
+									<label>Color</label>																					\
+									<select id='colorSelector'>																				\
+										<option style='background-color: transparent; color: black !important;' value='none'>none</option>	\
+										<option style='background-color: aqua; color: black !important;' value='aqua'>aqua</option>			\
+										<option style='background-color: black; color: white !important;' value='black'>black</option>		\
+										<option style='background-color: blue; color: white !important;' value='blue'>blue</option>			\
+										<option style='background-color: fuchsia; color: white !important;' value='fuchsia'>fuchsia</option>\
+										<option style='background-color: pink; color: black !important;' value='pink'>pink</option>			\
+										<option style='background-color: gray; color: white !important;' value='gray'>gray</option>			\
+										<option style='background-color: green; color: white !important;' value='green'>green</option>		\
+										<option style='background-color: lime; color: black !important;' value='lime'>lime</option>			\
+										<option style='background-color: maroon; color: white !important;' value='maroon'>maroon</option>	\
+										<option style='background-color: navy; color: white !important;' value='navy'>navy</option>			\
+										<option style='background-color: olive; color: white !important;' value='olive'>olive</option>		\
+										<option style='background-color: orange; color: white !important;' value='orange'>orange</option>	\
+										<option style='background-color: purple; color: white !important;' value='purple'>purple</option>	\
+										<option style='background-color: red; color:  white !important;' value='red'>red</option>			\
+										<option style='background-color: silver; color: black !important;' value='silver'>silver</option>	\
+										<option style='background-color: teal; color: white !important;' value='teal'>teal</option>			\
+										<option style='background-color: white; color: black !important;' value='white'>white</option>		\
+										<option style='background-color: yellow; color: black !important;' value='yellow'>yellow</option>	\
+									</select><br>																							\
+									<div class='tagButtons'>																				\
+									<input type='submit' id='saveTag' data-username='' value='save tag'>									\
+									<input type='submit' id='closeTag' value='close'>														\
+									</div>																									\
+								</form>																										\
+							</div>																											\
+						</div>																												";
+	
 	/**
 	* Initiates user tagging upon receiving the user tags list from storage.
 	*/
@@ -160,11 +196,33 @@
 	});
 	
 	/**
+	 * Display tagging popup.
+	 */
+	$(document).on("click", ".addTagName", function(event) {
+		var userName = $(this).attr("data-username");
+		var offset = $(this).offset();
+		
+		$('body').append(tagHtmlPopup);
+		$("#taggingTitle").text($("#taggingTitle").text().replace("{username}", userName));
+		
+		$('#taggingPopup').offset({ top: offset.top+15, left: offset.left});
+		$('#saveTag').attr("data-username", userName);
+	});
+	
+	/**
+	 * Close tagging popup.
+	 */
+	$(document).on("click", "#closeTag", function(event) {
+		$('#taggingPopup').remove();
+	});
+	
+	/**
 	* Add click listener for tagging a user.
 	*/
-	$(document).on("click", ".addTagName", function() {
+	$(document).on("click", "#saveTag", function(event) {
 		var userName = $(this).attr("data-username");
-		var tag = prompt("Please enter desired tag for user '" + userName + "'\n\nNOTE: Leave empty to remove tag.","");
+		//var tag = prompt("Please enter desired tag for user '" + userName + "'\n\nNOTE: Leave empty to remove tag.","");
+		var tag = $('#tagInput').val();
 		
 		// Save Tag
 		if (tag != null) {
@@ -204,6 +262,8 @@
 				}
 			});
 		}
+		
+		$('#taggingPopup').remove();
 	});
 
 	/**
@@ -214,9 +274,6 @@
 		window.dispatchEvent(new CustomEvent("GetNameTags"));
 	});
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
-
-
-
 
 
 
