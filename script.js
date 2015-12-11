@@ -144,10 +144,10 @@
 		}
 		
 		// Go through each user and add their tag (if it exists)
-		$("*[data-type='comment']").each(function( index ) {
-			var user = $(this).children(".entry").children(".tagline").children(".author").text();
+		$(".entry").each(function( index ) {
+			var user = $(this).children(".tagline").children(".author").text();
 			var addText = "add tag";
-			var tagline = $(this).children(".entry").children(".tagline");
+			var tagline = $(this).children(".tagline");
 			if (userTags != null && userTags.hasOwnProperty(user)) {
 				var tagName = userTags[user];
 				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
@@ -180,8 +180,8 @@
 			window.dispatchEvent(new CustomEvent("StoreNameTags", { "detail": tagsList }));	
 		
 			// Go through each user and add their tag (if it exists)
-			$("*[data-type='comment']").each(function( index ) {
-				var tagline = $(this).children(".entry").children(".tagline");
+			$(".entry").each(function( index ) {
+				var tagline = $(this).children(".tagline");
 				var user = tagline.children(".author").text();
 				if (user == userName) {
 					var tagName = userTags[user];
