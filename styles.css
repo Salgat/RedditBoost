@@ -8,7 +8,7 @@
 	padding: 1px 3px;
 }
 
-.collapsed .redditBuddyTaglineEntry {
+.collapsed .redditBuddyTaglineEntry, .link .redditBuddyTaglineEntry {
 	/* This is due to the white space disappearing when collapsed */
 	margin-left: 5px;
 	margin-right: 0;
