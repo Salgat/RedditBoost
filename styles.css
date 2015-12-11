@@ -17,20 +17,15 @@
 #taggingPopup {
 	position: absolute;
 	width: 300px;
-	border-color: #e3e3e3;
-	border-style: solid;
-    border-width: 1px;
+	border-radius: 5px;
+	border: 1px solid #e3e3e3;
 	overflow: visible;
+	background-color: white;
 }
 
 #taggingPopup h3 {
 	background-color: #e3e3e3;
 	padding: 10px;
-}
-
-#taggingPopup form {
-	background-color: white;
-	
 }
 
 #taggingPopup form * {
