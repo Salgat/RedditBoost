@@ -138,10 +138,10 @@
 	var tagHtmlPopup = "<div id='taggingPopup'>																								\
 							<h3 id='taggingTitle'>Tag {username}</h3>																		\
 							<div id='taggingContents'>																						\
-								<form name='taggingForm' action='javascript:void(0)'>														\
-									<label>Tag</label>																						\
-									<input id='tagInput' type='text'></input><br>															\
-									<label>Color</label>																					\
+								<form id='tagginForm' name='taggingForm' action='javascript:void(0)'>														\
+									<label class='tagPopupLabel'>Tag</label>																						\
+									<input id='tagInput' type='text'></input>															\
+									<label class='tagPopupLabel'>Color</label>																					\
 									<select id='colorSelector'>																				\
 										<option style='background-color: transparent; color: black !important;' value='none'>none</option>	\
 										<option style='background-color: aqua; color: black !important;' value='aqua'>aqua</option>			\
@@ -162,11 +162,8 @@
 										<option style='background-color: teal; color: white !important;' value='teal'>teal</option>			\
 										<option style='background-color: white; color: black !important;' value='white'>white</option>		\
 										<option style='background-color: yellow; color: black !important;' value='yellow'>yellow</option>	\
-									</select><br>																							\
-									<div class='tagButtons'>																				\
+									</select>																								\
 									<input type='submit' id='saveTag' data-username='' value='save tag'>									\
-									<input type='submit' id='closeTag' value='close'>														\
-									</div>																									\
 								</form>																										\
 							</div>																											\
 						</div>																												";
@@ -243,8 +240,12 @@
 				var tagline = $(this).children(".tagline");
 				var user = tagline.children(".author").text();
 				if (user == userName) {
-					var tagName = userTags[user].tag;
-					if (tag == "") {
+					var tagName = "";
+					if (userTags[user] != null) {
+						tagName = userTags[user].tag;
+					}
+					
+					if (tag == "" || tagName == "") {
 						// Remove tag
 						tagline.children('.userTag').remove();
 					} else if (tagline.children('.userTag').length) {

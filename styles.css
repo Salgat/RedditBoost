@@ -16,11 +16,12 @@
 
 #taggingPopup {
 	position: absolute;
-	width: 300px;
+	width: 230px;
 	border-radius: 5px;
 	border: 1px solid #e3e3e3;
 	overflow: visible;
 	background-color: white;
+	padding-bottom: 40px;
 }
 
 #taggingPopup h3 {
@@ -28,13 +29,22 @@
 	padding: 10px;
 }
 
-#taggingPopup form * {
-	margin: 10px;
+#taggingForm {
+	width: 230px;
 }
 
-.tagButtons {
-	text-align: center;
-	margin: 0 !important;
+#saveTag {
+	cursor: pointer;
+	position: absolute;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	bottom: 0;
+	padding: 3px;
+	border-radius: 3px;
+	border: 1px solid #e3e3e3;
+	background-color: #76ad4c;
+	color: white;
+	font-weight: bold;
 }
 
 .clearfix:after {
@@ -55,4 +65,19 @@
 	border-radius: 3px;
 	padding: 0 2px;
 	margin-right: 5px;
+}
+
+.tagPopupLabel {
+	margin: 10px;
+	clear: both;
+	float: left;
+	width: 25px;
+}
+
+#tagInput, #colorSelector {
+	margin: 10px;
+	border: 1px solid #e3e3e3;
+	border-radius: 3px;
+	width: 160px;
+	float: left;
 }
