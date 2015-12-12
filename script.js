@@ -137,6 +137,7 @@
 	
 	var tagHtmlPopup = "<div id='taggingPopup'>																								\
 							<h3 id='taggingTitle'>Tag {username}</h3>																		\
+							<div id='closeTag'>×</div>																						\
 							<div id='taggingContents'>																						\
 								<form id='tagginForm' name='taggingForm' action='javascript:void(0)'>														\
 									<label class='tagPopupLabel'>Tag</label>																						\

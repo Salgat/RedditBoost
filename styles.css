@@ -81,3 +81,14 @@
 	width: 160px;
 	float: left;
 }
+
+#closeTag {
+	cursor: pointer;
+	position: absolute;
+	right: 7px;
+	top: 7px;
+	padding: 3px 5px;
+	background-color: white;
+	border: 1px solid #e3e3e3;
+	border-radius: 3px;
+}
