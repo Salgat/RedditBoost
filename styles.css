@@ -1,0 +1,94 @@
+.redditBuddyTaglineEntry {
+	background-color: #e3e3e3;
+	color: #494949 !important;
+	/*border: 1px solid gray;*/
+	border-radius: 3px;
+	margin-right: 5px;
+	font-size: xx-small;
+	padding: 1px 3px;
+}
+
+.collapsed .redditBuddyTaglineEntry, .link .redditBuddyTaglineEntry {
+	/* This is due to the white space disappearing when collapsed */
+	margin-left: 5px;
+	margin-right: 0;
+}
+
+#taggingPopup {
+	position: absolute;
+	width: 230px;
+	border-radius: 5px;
+	border: 1px solid #e3e3e3;
+	overflow: visible;
+	background-color: white;
+	padding-bottom: 40px;
+}
+
+#taggingPopup h3 {
+	background-color: #e3e3e3;
+	padding: 10px;
+}
+
+#taggingForm {
+	width: 230px;
+}
+
+#saveTag {
+	cursor: pointer;
+	position: absolute;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	bottom: 0;
+	padding: 3px;
+	border-radius: 3px;
+	border: 1px solid #e3e3e3;
+	background-color: #76ad4c;
+	color: white;
+	font-weight: bold;
+}
+
+.clearfix:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content: " ";
+     clear: both;
+     height: 0;
+     }
+.clearfix { display: inline-block; }
+/* start commented backslash hack \*/
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/* close commented backslash hack */
+
+.userTag {
+	border-radius: 3px;
+	padding: 0 2px;
+	margin-right: 5px;
+}
+
+.tagPopupLabel {
+	margin: 10px;
+	clear: both;
+	float: left;
+	width: 25px;
+}
+
+#tagInput, #colorSelector {
+	margin: 10px;
+	border: 1px solid #e3e3e3;
+	border-radius: 3px;
+	width: 160px;
+	float: left;
+}
+
+#closeTag {
+	cursor: pointer;
+	position: absolute;
+	right: 7px;
+	top: 7px;
+	padding: 3px 5px;
+	background-color: white;
+	border: 1px solid #e3e3e3;
+	border-radius: 3px;
+}

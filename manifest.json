@@ -1,0 +1,18 @@
+{
+  "name": "RedditBuddy",
+  "description": "A set of features to enhance reddit",
+  "version": "2.0",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://www.reddit.com/r/*", "https://www.reddit.com/r/*"],
+      "css": ["styles.css"],
+      "js": ["onLoad.js"]
+    }
+  ],
+  "manifest_version": 2,
+  "web_accessible_resources": ["script.js"]
+}
