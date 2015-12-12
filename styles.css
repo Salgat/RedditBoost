@@ -50,3 +50,9 @@
 * html .clearfix { height: 1%; }
 .clearfix { display: block; }
 /* close commented backslash hack */
+
+.userTag {
+	border-radius: 3px;
+	padding: 0 2px;
+	margin-right: 5px;
+}

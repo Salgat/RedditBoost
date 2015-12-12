@@ -185,8 +185,8 @@
 			var addText = "add tag";
 			var tagline = $(this).children(".tagline");
 			if (userTags != null && userTags.hasOwnProperty(user)) {
-				var tagName = userTags[user];
-				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
+				var tagName = userTags[user].tag;
+				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
 				addText = "update tag";
 			}
 			
@@ -223,6 +223,7 @@
 		var userName = $(this).attr("data-username");
 		//var tag = prompt("Please enter desired tag for user '" + userName + "'\n\nNOTE: Leave empty to remove tag.","");
 		var tag = $('#tagInput').val();
+		var tagColor = $('#colorSelector option:selected').attr('style');
 		
 		// Save Tag
 		if (tag != null) {
@@ -230,7 +231,7 @@
 				// Empty string, remove tag
 				delete userTags[userName];
 			} else {
-				userTags[userName] = tag;
+				userTags[userName] = {"tag": tag, "tagColor": tagColor};
 			}
 			
 			var tagsList = {}; 
@@ -242,14 +243,14 @@
 				var tagline = $(this).children(".tagline");
 				var user = tagline.children(".author").text();
 				if (user == userName) {
-					var tagName = userTags[user];
+					var tagName = userTags[user].tag;
 					if (tag == "") {
 						// Remove tag
 						tagline.children('.userTag').remove();
 					} else if (tagline.children('.userTag').length) {
-						tagline.children('.userTag').text(tagName);
+						tagline.children('.userTag').text(tagName).attr('style', userTags[user].tagColor);
 					} else {
-						tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;'>" + tagName + "</a>");
+						tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
 					}
 				
 					var addText = "update tag";
