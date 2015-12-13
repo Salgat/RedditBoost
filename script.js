@@ -298,17 +298,19 @@
 		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForSubmissions")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmits"] = bannedSubmissionUsers;
-			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
+			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		} else {
 			bannedSubmissionUsers = event.detail["RedditPlus_BlockedUserForSubmissions"];
 		}
 	
-		// Go through each user and add a class to hide if matching
-		$( ".author" ).each(function( index ) {
-			var comment = $(this).parent().parent().parent();
-			if (bannedSubmissionUsers != null && bannedSubmissionUsers.indexOf($(this).text()) >= 0 && comment.attr("data-type") == "comment") {
-				comment.removeClass("noncollapsed").addClass("collapsed");
+		// Go through each user and hide if matching
+		$("*[data-type='link']").each(function( index, thisLink ) {
+			var userName = $(thisLink).children(".entry").children(".tagline").children(".author").text();
+			if (bannedSubmissionUsers.indexOf(userName) >= 0) {
+				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				$(thisLink).after(element);
+				$(thisLink).hide();
 			}
 		});
 	
@@ -327,9 +329,9 @@
 	}, false);
 	
 	/**
-	 * Return span element HTML to append to tagline for showing or hiding comments.
+	 * Return span element HTML to append to tagline for showing or hiding submissions.
 	 * @param {string} userName The username this element belongs to
-	 * @param {string} classToAdd The class to add (either blockUserComments or unblockUserComments)
+	 * @param {string} classToAdd The class to add (either blockUserSubmissionBans or unblockUserSubmissionBans)
 	 * @param {string} textToAdd The text displayed to the user to click
 	 */
 	function tagLineSpan(userName, classToAdd, textToAdd) {
@@ -341,13 +343,16 @@
 	*/
 	$(document).on("click", ".blockUserSubmissions", function() {
 		// Block the user by replacing it with a title, username, and "show link button"
-		//var link = $(this).closest("*[data-type='link']");
-		//link.hide();
-		
 		var userName = $(this).attr("data-username");
-		$("*[data-type='link']").each(function( index, thisComment ) {
-			if ($(thisComment).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = "<div class='link' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;'>" + $(thisComment).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='redditBuddyTaglineEntry' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+		
+		bannedSubmissionUsers.push(userName);
+		var bannedList = {}; 
+		bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+		window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
+		
+		$("*[data-type='link']").each(function( index, thisLink ) {
+			if ($(thisLink).children(".entry").children(".tagline").children(".author").text() == userName) {
+				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(this).after(element);
 				$(this).hide();
 			}
@@ -355,11 +360,26 @@
 	});
 	
 	/**
-	* Add click listener for unblocking a user's comments.
+	* Add click listener for unblocking a user's submissions.
 	*/
 	$(document).on("click", ".unblockUserSubmissions", function() {
 		// Unblock the user
+		var userName = $(this).attr("data-username");
+		var blockedIndex = bannedSubmissionUsers.indexOf(userName);
+		if (blockedIndex >= 0) {
+			bannedSubmissionUsers.splice(blockedIndex, 1);
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
+		}
 		
+		$("*[data-type='link']").each(function( index, thisSubmissionBan ) {
+			if ($(thisSubmissionBan).children(".entry").children(".tagline").children(".author").text() == userName) {
+				var element = $(thisSubmissionBan).parent().find("*[data-username=" + userName + "]");
+				element.remove();
+				$(this).show();
+			}
+		});
 	});
 	
 	/**
