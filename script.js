@@ -408,11 +408,13 @@
 		if (isImageLink(link)) {
 			var title = $(this).text();
 			displayImage(link, title, offset);
+			$(this).addClass("activeImagePopup");
 		}
 	});
 	
 	$("a").mouseleave(function() {
 		$('#imagePopup').remove();
+		$(this).removeClass("activeImagePopup");
 	});
 	
 	function isImageLink(link) {
@@ -436,23 +438,51 @@
 				return;
 			}
 			
-			var offset = $("#imagePopup").offset();
-			offset.top = offset.top - 20;
-			var windowOffsetTop = offset.top - $(window).scrollTop();
-			var windowOffsetLeft = offset.left - $(window).scrollLeft();
+			// Check if there is more space above the link
+			var offset = $(".activeImagePopup").offset();
 			var viewportWidth = $(window).width();
 			var viewportHeight = $(window).height();
-			var popupWidth = $('#imagePopup').width();
-			var popupHeight = $('#imagePopup').height();
-			if (popupWidth > viewportWidth - windowOffsetLeft) {
-				$('#imagePopup img').width(viewportWidth - windowOffsetLeft -20);
+			var linkOffset = $(".activeImagePopup").offset();
+			var linkWindowOffsetTop = linkOffset.top - $(window).scrollTop();
+			var spaceBelow = viewportHeight - linkWindowOffsetTop;
+			var spaceAbove = viewportHeight - spaceBelow;
+			var showBelow = true;
+			if (spaceAbove > spaceBelow) {
+				showBelow = false;
+				$('#imagePopup').offset({ top: $(window).scrollTop()});
+				
+				var windowOffsetTop = offset.top - $(window).scrollTop();
+				var windowOffsetLeft = offset.left - $(window).scrollLeft();
+				var popupWidth = $('#imagePopup').width();
+				var popupHeight = $('#imagePopup').height();
+				if (popupWidth < viewportWidth - windowOffsetLeft) {
+					$('#imagePopup img').width(viewportWidth - windowOffsetLeft -20);
+				} else {
+					$('#imagePopup img').removeAttr('width');
+				}
+				if (windowOffsetTop < popupHeight) {
+					$('#imagePopup img').height(windowOffsetTop - 50);
+				} else {
+					$('#imagePopup img').removeAttr('height');
+				}
+				
 			} else {
-				$('#imagePopup img').removeAttr('width');
-			}
-			if (popupHeight > viewportHeight - windowOffsetTop) {
-				$('#imagePopup img').height(viewportHeight - windowOffsetTop - 50);
-			} else {
-				$('#imagePopup img').removeAttr('height');
+				$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
+				offset.top = offset.top - 20;
+				windowOffsetTop = offset.top - $(window).scrollTop();
+				windowOffsetLeft = offset.left - $(window).scrollLeft();
+				popupWidth = $('#imagePopup').width();
+				popupHeight = $('#imagePopup').height();
+				if (popupWidth > viewportWidth - windowOffsetLeft) {
+					$('#imagePopup img').width(viewportWidth - windowOffsetLeft -20);
+				} else {
+					$('#imagePopup img').removeAttr('width');
+				}
+				if (popupHeight > viewportHeight - windowOffsetTop) {
+					$('#imagePopup img').height(viewportHeight - windowOffsetTop - 70);
+				} else {
+					$('#imagePopup img').removeAttr('height');
+				}
 			}
 		}, 100);
 	})();
