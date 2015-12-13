@@ -308,7 +308,7 @@
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			var userName = $(thisLink).children(".entry").children(".tagline").children(".author").text();
 			if (bannedSubmissionUsers.indexOf(userName) >= 0) {
-				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(thisLink).after(element);
 				$(thisLink).hide();
 			}
@@ -352,7 +352,7 @@
 		
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			if ($(thisLink).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(this).after(element);
 				$(this).hide();
 			}
@@ -375,7 +375,7 @@
 		
 		$("*[data-type='link']").each(function( index, thisSubmissionBan ) {
 			if ($(thisSubmissionBan).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = $(thisSubmissionBan).parent().find("*[data-username=" + userName + "]");
+				var element = $(thisSubmissionBan).parent().find("*[data-username-banned=" + userName + "]");
 				element.remove();
 				$(this).show();
 			}
