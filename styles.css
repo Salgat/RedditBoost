@@ -104,8 +104,12 @@
 
 #imagePopup img {
 	padding: 5px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 #imagePopup h3 {
 	text-align: center;
+	padding-bottom: 5px;
 }

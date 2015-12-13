@@ -406,7 +406,6 @@
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
 		if (isImageLink(link)) {
-			console.log("Hover over link: " + offset.top + ", " + offset.left + " for link: " + link);
 			var title = $(this).text();
 			displayImage(link, title, offset);
 		}
@@ -429,6 +428,30 @@
 		$('#imagePopup img').attr("src", link);
 		$('#imagePopup h3').text(title);
 	}
+	
+	// TODO: On a timer, if popup is active, resize it (in case an image loaded later)
+	(function(){
+		setInterval(function() {
+			var offset = $("#imagePopup").offset();
+			offset.top = offset.top - 20;
+			var windowOffsetTop = offset.top - $(window).scrollTop();
+			var windowOffsetLeft = offset.left - $(window).scrollLeft();
+			var viewportWidth = $(window).width();
+			var viewportHeight = $(window).height();
+			var popupWidth = $('#imagePopup').width();
+			var popupHeight = $('#imagePopup').height();
+			if (popupWidth > viewportWidth - windowOffsetLeft) {
+				$('#imagePopup img').width(viewportWidth - windowOffsetLeft -20);
+			} else {
+				$('#imagePopup img').removeAttr('width');
+			}
+			if (popupHeight > viewportHeight - windowOffsetTop) {
+				$('#imagePopup img').height(viewportHeight - windowOffsetTop - 50);
+			} else {
+				$('#imagePopup img').removeAttr('height');
+			}
+		}, 100);
+	})();
 
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
