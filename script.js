@@ -6,129 +6,6 @@
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
-/**
- * User's comment banning
- */
-(function ( redditBuddy, $, undefined) {
-	var bannedUsers = [];
-	
-	/**
-	* Initiates user comment blocking upon receiving the banned users list from storage.
-	*/
-	window.addEventListener("RetrievedCommentBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) return;
-		bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
-	
-		// Go through each user and add a class to hide if matching
-		$( ".author" ).each(function( index ) {
-			var comment = $(this).parent().parent().parent();
-			if (bannedUsers != null && bannedUsers.indexOf($(this).text()) >= 0 && comment.attr("data-type") == "comment") {
-				comment.removeClass("noncollapsed").addClass("collapsed");
-			}
-		});
-	
-		// Add option to block or unblock a user
-		$("*[data-type='comment']").each(function( index ) {
-			var user = $(this).children(".entry").children(".tagline").children(".author").text();
-			var tagline = $(this).children(".entry").children(".tagline");
-			if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
-				// Unhide
-				tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
-			} else {
-				// Hide
-				tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
-			}
-		});
-	}, false);
-	
-	/**
-	 * Return span element HTML to append to tagline for showing or hiding comments.
-	 * @param {string} userName The username this element belongs to
-	 * @param {string} classToAdd The class to add (either blockUserComments or unblockUserComments)
-	 * @param {string} textToAdd The text displayed to the user to click
-	 */
-	function tagLineSpan(userName, classToAdd, textToAdd) {
-		return "<a href='javascript:void(0)' class='" + classToAdd + " redditBuddyTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
-	}
-	
-	/**
-	* Add click listener for blocking a user's comments.
-	*/
-	$(document).on("click", ".unblockUserComments", function() {
-		// Block the user
-		blockOrUnblockUserComments(this, bannedUsers, false);
-	});
-	
-	/**
-	* Add click listener for unblocking a user's comments.
-	*/
-	$(document).on("click", ".blockUserComments", function() {
-		// Unblock the user
-		blockOrUnblockUserComments(this, bannedUsers, true);
-	});
-	
-	/**
-	* Blocks or unblocks a user's comments based on parameters.
-	* @param {object} thisElement The element of the comment.
-	* @param {array} bannedUsers An array of banned users.
-	* @param {bool} isBlocking Whether to block or not the user's comments.
-	*/
-	function blockOrUnblockUserComments(thisElement, bannedUsers, isBlocking) {
-		var blockingClass;
-		if (!isBlocking) {
-			blockingClass = ".unblockUserComments";
-		} else {
-			blockingClass = ".blockUserComments";
-		}
-		var textHeadline;
-		if (!isBlocking) {
-			textHeadline = "hide user comments";
-		} else {
-			textHeadline = "show user comments";
-		}
-		
-		if (bannedUsers == null) bannedUsers = [];
-		
-		var userToChange = $(thisElement).attr("data-username");
-		var blockedIndex = bannedUsers.indexOf(userToChange);
-		if ((isBlocking && blockedIndex < 0) || (!isBlocking)) {
-			if (isBlocking) {
-				bannedUsers.push(userToChange);
-			} else {
-				bannedUsers.splice(blockedIndex, 1);
-			}
-			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
-			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
-			
-			$("*[data-type='comment']").each(function( index, thisComment ) {
-				if ($(thisComment).children(".entry").children(".tagline").children(".author").text() == userToChange) {
-					var textElement = $(thisComment).children(".entry").children(".tagline").children(blockingClass);
-					textElement.text(textHeadline);
-					
-					if (isBlocking) {
-						textElement.removeClass("blockUserComments").addClass("unblockUserComments");
-						$(thisComment).removeClass("noncollapsed").addClass("collapsed");
-					} else {
-						textElement.removeClass("unblockUserComments").addClass("blockUserComments");
-						$(thisComment).removeClass("collapsed").addClass("noncollapsed");
-					}
-				}
-			});
-		}
-	}
-	
-	/**
-	* Upon loading, initiates events with onLoad.js that load comment blocking functionality.
-	*/
-	$(document).ready(function() {
-		// When page loads, initiate event to get banned users list and collapse all comments by those users
-		window.dispatchEvent(new CustomEvent("GetCommentBans"));
-	});
-	
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
-
-
 /** 
  * User Tagging
  */
@@ -278,6 +155,221 @@
 	});
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
+
+/**
+ * User comment banning
+ */
+(function ( redditBuddy, $, undefined) {
+	var bannedUsers = [];
+	
+	/**
+	* Initiates user comment blocking upon receiving the banned users list from storage.
+	*/
+	window.addEventListener("RetrievedCommentBans", function(event) {
+		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) {
+			// Create a new empty entry in storage
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
+		} else {
+			bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
+		}
+	
+		// Go through each user and add a class to hide if matching
+		$( ".author" ).each(function( index ) {
+			var comment = $(this).parent().parent().parent();
+			if (bannedUsers != null && bannedUsers.indexOf($(this).text()) >= 0 && comment.attr("data-type") == "comment") {
+				comment.removeClass("noncollapsed").addClass("collapsed");
+			}
+		});
+	
+		// Add option to block or unblock a user
+		$("*[data-type='comment']").each(function( index ) {
+			var user = $(this).children(".entry").children(".tagline").children(".author").text();
+			var tagline = $(this).children(".entry").children(".tagline");
+			if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
+				// Unhide
+				tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
+			} else {
+				// Hide
+				tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
+			}
+		});
+	}, false);
+	
+	/**
+	 * Return span element HTML to append to tagline for showing or hiding comments.
+	 * @param {string} userName The username this element belongs to
+	 * @param {string} classToAdd The class to add (either blockUserComments or unblockUserComments)
+	 * @param {string} textToAdd The text displayed to the user to click
+	 */
+	function tagLineSpan(userName, classToAdd, textToAdd) {
+		return "<a href='javascript:void(0)' class='" + classToAdd + " redditBuddyTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
+	}
+	
+	/**
+	* Add click listener for blocking a user's comments.
+	*/
+	$(document).on("click", ".unblockUserComments", function() {
+		// Block the user
+		blockOrUnblockUserComments(this, bannedUsers, false);
+	});
+	
+	/**
+	* Add click listener for unblocking a user's comments.
+	*/
+	$(document).on("click", ".blockUserComments", function() {
+		// Unblock the user
+		blockOrUnblockUserComments(this, bannedUsers, true);
+	});
+	
+	/**
+	* Blocks or unblocks a user's comments based on parameters.
+	* @param {object} thisElement The element of the comment.
+	* @param {array} bannedUsers An array of banned users.
+	* @param {bool} isBlocking Whether to block or not the user's comments.
+	*/
+	function blockOrUnblockUserComments(thisElement, bannedUsers, isBlocking) {
+		var blockingClass;
+		if (!isBlocking) {
+			blockingClass = ".unblockUserComments";
+		} else {
+			blockingClass = ".blockUserComments";
+		}
+		var textHeadline;
+		if (!isBlocking) {
+			textHeadline = "hide user comments";
+		} else {
+			textHeadline = "show user comments";
+		}
+		
+		if (bannedUsers == null) bannedUsers = [];
+		
+		var userToChange = $(thisElement).attr("data-username");
+		var blockedIndex = bannedUsers.indexOf(userToChange);
+		if ((isBlocking && blockedIndex < 0) || (!isBlocking)) {
+			if (isBlocking) {
+				bannedUsers.push(userToChange);
+			} else {
+				bannedUsers.splice(blockedIndex, 1);
+			}
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
+			
+			$("*[data-type='comment']").each(function( index, thisComment ) {
+				if ($(thisComment).children(".entry").children(".tagline").children(".author").text() == userToChange) {
+					var textElement = $(thisComment).children(".entry").children(".tagline").children(blockingClass);
+					textElement.text(textHeadline);
+					
+					if (isBlocking) {
+						textElement.removeClass("blockUserComments").addClass("unblockUserComments");
+						$(thisComment).removeClass("noncollapsed").addClass("collapsed");
+					} else {
+						textElement.removeClass("unblockUserComments").addClass("blockUserComments");
+						$(thisComment).removeClass("collapsed").addClass("noncollapsed");
+					}
+				}
+			});
+		}
+	}
+	
+	/**
+	* Upon loading, initiates events with onLoad.js that load comment blocking functionality.
+	*/
+	$(document).ready(function() {
+		// When page loads, initiate event to get banned users list and collapse all comments by those users
+		window.dispatchEvent(new CustomEvent("GetCommentBans"));
+	});
+	
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+
+
+/** 
+ * User submission blocking
+ */
+(function ( redditBuddy, $, undefined) {
+	var bannedSubmissionUsers = [];
+	
+	/**
+	* Initiates user submission blocking upon receiving the banned users list from storage.
+	*/
+	window.addEventListener("RetrievedSubmissionBans", function(event) {
+		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForSubmissions")) {
+			// Create a new empty entry in storage
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedUserForSubmits"] = bannedSubmissionUsers;
+			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
+		} else {
+			bannedSubmissionUsers = event.detail["RedditPlus_BlockedUserForSubmissions"];
+		}
+	
+		// Go through each user and add a class to hide if matching
+		$( ".author" ).each(function( index ) {
+			var comment = $(this).parent().parent().parent();
+			if (bannedSubmissionUsers != null && bannedSubmissionUsers.indexOf($(this).text()) >= 0 && comment.attr("data-type") == "comment") {
+				comment.removeClass("noncollapsed").addClass("collapsed");
+			}
+		});
+	
+		// Add option to block or unblock a user
+		$("*[data-type='link']").each(function( index ) {
+			var user = $(this).children(".entry").children(".tagline").children(".author").text();
+			var tagline = $(this).children(".entry").children(".tagline");
+			if (bannedSubmissionUsers != null && bannedSubmissionUsers.indexOf(user) >= 0) {
+				// Unhide
+				tagline.append(tagLineSpan(user, "unblockUserSubmissions", "show user submissions"));
+			} else {
+				// Hide
+				tagline.append(tagLineSpan(user, "blockUserSubmissions", "hide user submissions"));
+			}
+		});
+	}, false);
+	
+	/**
+	 * Return span element HTML to append to tagline for showing or hiding comments.
+	 * @param {string} userName The username this element belongs to
+	 * @param {string} classToAdd The class to add (either blockUserComments or unblockUserComments)
+	 * @param {string} textToAdd The text displayed to the user to click
+	 */
+	function tagLineSpan(userName, classToAdd, textToAdd) {
+		return "<a href='javascript:void(0)' class='" + classToAdd + " redditBuddyTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
+	}
+	
+	/**
+	* Add click listener for blocking a user's submissions.
+	*/
+	$(document).on("click", ".blockUserSubmissions", function() {
+		// Block the user by replacing it with a title, username, and "show link button"
+		//var link = $(this).closest("*[data-type='link']");
+		//link.hide();
+		
+		var userName = $(this).attr("data-username");
+		$("*[data-type='link']").each(function( index, thisComment ) {
+			if ($(thisComment).children(".entry").children(".tagline").children(".author").text() == userName) {
+				var element = "<div class='link' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;'>" + $(thisComment).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='redditBuddyTaglineEntry' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				$(this).after(element);
+				$(this).hide();
+			}
+		});
+	});
+	
+	/**
+	* Add click listener for unblocking a user's comments.
+	*/
+	$(document).on("click", ".unblockUserSubmissions", function() {
+		// Unblock the user
+		
+	});
+	
+	/**
+	* Upon loading, initiates events with onLoad.js that load submission blocking functionality.
+	*/
+	$(document).ready(function() {
+		// When page loads, initiate event to get banned users list and collapse all submissions by those users
+		window.dispatchEvent(new CustomEvent("GetSubmissionBans"));
+	});
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
 
