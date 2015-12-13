@@ -92,3 +92,20 @@
 	border: 1px solid #e3e3e3;
 	border-radius: 3px;
 }
+
+
+
+#imagePopup {
+	position: absolute;
+	border-radius: 5px;
+	border: 1px solid #e3e3e3;
+	background-color: white;
+}
+
+#imagePopup img {
+	padding: 5px;
+}
+
+#imagePopup h3 {
+	text-align: center;
+}

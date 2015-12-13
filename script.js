@@ -16,10 +16,10 @@
 							<h3 id='taggingTitle'>Tag {username}</h3>																		\
 							<div id='closeTag'>×</div>																						\
 							<div id='taggingContents'>																						\
-								<form id='tagginForm' name='taggingForm' action='javascript:void(0)'>														\
-									<label class='tagPopupLabel'>Tag</label>																						\
-									<input id='tagInput' type='text'></input>															\
-									<label class='tagPopupLabel'>Color</label>																					\
+								<form id='tagginForm' name='taggingForm' action='javascript:void(0)'>										\
+									<label class='tagPopupLabel'>Tag</label>																\
+									<input id='tagInput' type='text'></input>																\
+									<label class='tagPopupLabel'>Color</label>																\
 									<select id='colorSelector'>																				\
 										<option style='background-color: transparent; color: black !important;' value='none'>none</option>	\
 										<option style='background-color: aqua; color: black !important;' value='aqua'>aqua</option>			\
@@ -395,12 +395,25 @@
  * Image Hover Preview
  */
 (function ( redditBuddy, $, undefined) {
+	
+	var tagHtmlPopup = "<div id='imagePopup'>																								\
+						<img src='' id='imagePopupImg'>																						\
+						<h3 id='imagePopupTitle'>																							\
+						</div>																												";
+	
+	
 	$("a").mouseover(function() {
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
 		if (isImageLink(link)) {
 			console.log("Hover over link: " + offset.top + ", " + offset.left + " for link: " + link);
+			var title = $(this).text();
+			displayImage(link, title, offset);
 		}
+	});
+	
+	$("a").mouseleave(function() {
+		$('#imagePopup').remove();
 	});
 	
 	function isImageLink(link) {
@@ -408,6 +421,13 @@
 		imagePattern.ignoreCase = true;
 		var result = imagePattern.test(link);
 		return result;
+	}
+	
+	function displayImage(link, title, offset) {
+		$('body').append(tagHtmlPopup);
+		$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
+		$('#imagePopup img').attr("src", link);
+		$('#imagePopup h3').text(title);
 	}
 
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
