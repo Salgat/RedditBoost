@@ -13,10 +13,10 @@ As of now RedditBuddy only works with Chrome. To setup, complete the following i
 ## Goals
 RedditBuddy is intended to be a lightweight and mostly seamless version of RES for a small set of features. Below are some of the intended features to be added.
 
-- Tagging users
+- Tagging users - Completed
 - Hover over image links to preview them
-- Block all selected user's submissions
-- Hide all selected user's comments
+- Block all selected user's submissions - Completed
+- Hide all selected user's comments - Completed
 - Disable Subreddit CSS
 - After reaching a stable version, adding support for Firefox (and possibly Safari)
 
