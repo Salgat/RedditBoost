@@ -432,6 +432,10 @@
 	// TODO: On a timer, if popup is active, resize it (in case an image loaded later)
 	(function(){
 		setInterval(function() {
+			if ($("#imagePopup").length <= 0) {
+				return;
+			}
+			
 			var offset = $("#imagePopup").offset();
 			offset.top = offset.top - 20;
 			var windowOffsetTop = offset.top - $(window).scrollTop();
