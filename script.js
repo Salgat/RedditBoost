@@ -391,8 +391,26 @@
 	});
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
+/** 
+ * Image Hover Preview
+ */
+(function ( redditBuddy, $, undefined) {
+	$("a").mouseover(function() {
+		var offset = $(this).offset();
+		var link = $(this).attr("href");
+		if (isImageLink(link)) {
+			console.log("Hover over link: " + offset.top + ", " + offset.left + " for link: " + link);
+		}
+	});
+	
+	function isImageLink(link) {
+		var imagePattern = new RegExp(".(gif|jpg|jpeg|png)"); // Todo: Handle gifv and other html5 images
+		imagePattern.ignoreCase = true;
+		var result = imagePattern.test(link);
+		return result;
+	}
 
-
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
 
