@@ -478,8 +478,8 @@
 				} else {
 					$('#imagePopup img').removeAttr('width');
 				}
-				if (popupHeight > viewportHeight - windowOffsetTop - 70) {
-					$('#imagePopup img').height(viewportHeight - windowOffsetTop - 70);
+				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
+					$('#imagePopup img').height(viewportHeight - windowOffsetTop - 90);
 				} else {
 					$('#imagePopup img').removeAttr('height');
 				}
