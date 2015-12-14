@@ -3,12 +3,11 @@
   "description": "A set of features to enhance reddit",
   "version": "2.0",
   "permissions": [
-    "activeTab",
     "storage"
   ],
   "content_scripts": [
     {
-      "matches": ["http://www.reddit.com/r/*", "https://www.reddit.com/r/*"],
+      "matches": ["http://www.reddit.com/r/*", "https://www.reddit.com/r/*", "http://www.reddit.com/", "https://www.reddit.com/"],
       "css": ["styles.css"],
       "js": ["onLoad.js"]
     }

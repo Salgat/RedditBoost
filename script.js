@@ -16,10 +16,10 @@
 							<h3 id='taggingTitle'>Tag {username}</h3>																		\
 							<div id='closeTag'>×</div>																						\
 							<div id='taggingContents'>																						\
-								<form id='tagginForm' name='taggingForm' action='javascript:void(0)'>														\
-									<label class='tagPopupLabel'>Tag</label>																						\
-									<input id='tagInput' type='text'></input>															\
-									<label class='tagPopupLabel'>Color</label>																					\
+								<form id='tagginForm' name='taggingForm' action='javascript:void(0)'>										\
+									<label class='tagPopupLabel'>Tag</label>																\
+									<input id='tagInput' type='text'></input>																\
+									<label class='tagPopupLabel'>Color</label>																\
 									<select id='colorSelector'>																				\
 										<option style='background-color: transparent; color: black !important;' value='none'>none</option>	\
 										<option style='background-color: aqua; color: black !important;' value='aqua'>aqua</option>			\
@@ -391,8 +391,103 @@
 	});
 }( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
+/** 
+ * Image Hover Preview
+ */
+(function ( redditBuddy, $, undefined) {
+	
+	var tagHtmlPopup = "<div id='imagePopup'>																								\
+						<img src='' id='imagePopupImg'>																						\
+						<h3 id='imagePopupTitle'>																							\
+						</div>																												";
+	
+	
+	$("a").mouseover(function() {
+		var offset = $(this).offset();
+		var link = $(this).attr("href");
+		if (isImageLink(link)) {
+			var title = $(this).text();
+			displayImage(link, title, offset);
+			$(this).addClass("activeImagePopup");
+		}
+	});
+	
+	$("a").mouseleave(function() {
+		$('#imagePopup').remove();
+		$(this).removeClass("activeImagePopup");
+	});
+	
+	function isImageLink(link) {
+		var imagePattern = new RegExp(".(gif|jpg|jpeg|png)"); // Todo: Handle gifv and other html5 images
+		imagePattern.ignoreCase = true;
+		var result = imagePattern.test(link);
+		return result;
+	}
+	
+	function displayImage(link, title, offset) {
+		$('body').append(tagHtmlPopup);
+		$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
+		$('#imagePopup img').attr("src", link);
+		$('#imagePopup h3').text(title);
+	}
+	
+	// TODO: On a timer, if popup is active, resize it (in case an image loaded later)
+	(function(){
+		setInterval(function() {
+			if ($("#imagePopup").length <= 0) {
+				return;
+			}
+			
+			// Check if there is more space above the link
+			var offset = $(".activeImagePopup").offset();
+			var viewportWidth = $(window).width();
+			var viewportHeight = $(window).height();
+			var linkOffset = $(".activeImagePopup").offset();
+			var linkWindowOffsetTop = linkOffset.top - $(window).scrollTop();
+			var spaceBelow = viewportHeight - linkWindowOffsetTop;
+			var spaceAbove = viewportHeight - spaceBelow;
+			var showBelow = true;
+			if (spaceAbove > spaceBelow) {
+				showBelow = false;
+				$('#imagePopup').offset({ top: $(window).scrollTop()});
+				
+				var windowOffsetTop = offset.top - $(window).scrollTop();
+				var windowOffsetLeft = offset.left - $(window).scrollLeft();
+				var popupWidth = $('#imagePopup').width();
+				var popupHeight = $('#imagePopup').height();
+				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
+					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft - 20);
+				} else {
+					$('#imagePopup img').removeAttr('max-width');
+				}
+				if (windowOffsetTop - 50 < popupHeight) {
+					$('#imagePopup img').css("max-height", windowOffsetTop - 50);
+				} else {
+					$('#imagePopup img').removeAttr('max-height');
+				}
+				
+			} else {
+				$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
+				offset.top = offset.top - 20;
+				windowOffsetTop = offset.top - $(window).scrollTop();
+				windowOffsetLeft = offset.left - $(window).scrollLeft();
+				popupWidth = $('#imagePopup').width();
+				popupHeight = $('#imagePopup').height();
+				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
+					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft -20);
+				} else {
+					$('#imagePopup img').removeAttr('max-width');
+				}
+				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
+					$('#imagePopup img').css("max-height", viewportHeight - windowOffsetTop - 90);
+				} else {
+					$('#imagePopup img').removeAttr('max-height');
+				}
+			}
+		}, 100);
+	})();
 
-
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
 
