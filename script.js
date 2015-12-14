@@ -456,14 +456,14 @@
 				var popupWidth = $('#imagePopup').width();
 				var popupHeight = $('#imagePopup').height();
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
-					$('#imagePopup img').width(viewportWidth - windowOffsetLeft - 20);
+					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft - 20);
 				} else {
-					$('#imagePopup img').removeAttr('width');
+					$('#imagePopup img').removeAttr('max-width');
 				}
 				if (windowOffsetTop - 50 < popupHeight) {
-					$('#imagePopup img').height(windowOffsetTop - 50);
+					$('#imagePopup img').css("max-height", windowOffsetTop - 50);
 				} else {
-					$('#imagePopup img').removeAttr('height');
+					$('#imagePopup img').removeAttr('max-height');
 				}
 				
 			} else {
@@ -474,14 +474,14 @@
 				popupWidth = $('#imagePopup').width();
 				popupHeight = $('#imagePopup').height();
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
-					$('#imagePopup img').width(viewportWidth - windowOffsetLeft -20);
+					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft -20);
 				} else {
-					$('#imagePopup img').removeAttr('width');
+					$('#imagePopup img').removeAttr('max-width');
 				}
 				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
-					$('#imagePopup img').height(viewportHeight - windowOffsetTop - 90);
+					$('#imagePopup img').css("max-height", viewportHeight - windowOffsetTop - 90);
 				} else {
-					$('#imagePopup img').removeAttr('height');
+					$('#imagePopup img').removeAttr('max-height');
 				}
 			}
 		}, 100);
