@@ -318,13 +318,7 @@
 		$("*[data-type='link']").each(function( index ) {
 			var user = $(this).children(".entry").children(".tagline").children(".author").text();
 			var tagline = $(this).children(".entry").children(".tagline");
-			if (bannedSubmissionUsers != null && bannedSubmissionUsers.indexOf(user) >= 0) {
-				// Unhide
-				tagline.append(tagLineSpan(user, "unblockUserSubmissions", "show user submissions"));
-			} else {
-				// Hide
-				tagline.append(tagLineSpan(user, "blockUserSubmissions", "hide user submissions"));
-			}
+			tagline.append(tagLineSpan(user, "blockUserSubmissions", "hide user submissions"));
 		});
 	}, false);
 	
@@ -491,9 +485,66 @@
 
 
 
+/** 
+ * Block custom CSS
+ */
+(function ( redditBuddy, $, undefined) {
+	var bannedCss = [];
+	var cssButton = "<div id='disableCss' class='disableCss'>Disable CSS</div>"
+	
+	$(document).ready(function() {
+		window.dispatchEvent(new CustomEvent("GetCssBans"));
+	});
+	
+	window.addEventListener("RetrievedCssBans", function(event) {
+		if (!event.detail.hasOwnProperty("RedditPlus_BlockedCss")) {
+			// Create a new empty entry in storage
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
+		} else {
+			bannedCss = event.detail["RedditPlus_BlockedCss"];
+		}
+		
+		var subredditName = $(".redditname").text();
+		$('body').append(cssButton);
+		if (bannedCss.indexOf(subredditName) >= 0) {
+			$("#disableCss").text("Enable CSS").removeClass("disableCss").addClass("enableCss");
+			$('link[title="applied_subreddit_stylesheet"]').prop('disabled', true);
+		} else {
+			$('link[title="applied_subreddit_stylesheet"]').prop('disabled', false);
+		}
+	}, false);
+	
+	$(document).on("click", ".disableCss", function(event) {
+		$(this).text("Enable CSS");
+		$(this).removeClass('disableCss').addClass('enableCss');
+		$('link[title="applied_subreddit_stylesheet"]').prop('disabled', true);
+		
+		var subredditName = $(".redditname").text();
+		bannedCss.push(subredditName);
+		var bannedList = {}; 
+		bannedList["RedditPlus_BlockedCss"] = bannedCss;
+		window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
+		
+	});
+	
+	$(document).on("click", ".enableCss", function(event) {
+		$(this).text("Disable CSS");
+		$(this).removeClass('enableCss').addClass('disableCss');
+		$('link[title="applied_subreddit_stylesheet"]').prop('disabled', false)
+		
+		var subredditName = $(".redditname").text();
+		var blockedIndex = bannedCss.indexOf(subredditName);
+		if (blockedIndex >= 0) {
+			bannedCss.splice(blockedIndex, 1);
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
+		}
+	});
 
-
-
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
 
