@@ -318,13 +318,7 @@
 		$("*[data-type='link']").each(function( index ) {
 			var user = $(this).children(".entry").children(".tagline").children(".author").text();
 			var tagline = $(this).children(".entry").children(".tagline");
-			if (bannedSubmissionUsers != null && bannedSubmissionUsers.indexOf(user) >= 0) {
-				// Unhide
-				tagline.append(tagLineSpan(user, "unblockUserSubmissions", "show user submissions"));
-			} else {
-				// Hide
-				tagline.append(tagLineSpan(user, "blockUserSubmissions", "hide user submissions"));
-			}
+			tagline.append(tagLineSpan(user, "blockUserSubmissions", "hide user submissions"));
 		});
 	}, false);
 	
