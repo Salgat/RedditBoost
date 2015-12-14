@@ -56,17 +56,19 @@
 		
 		// Go through each user and add their tag (if it exists)
 		$(".entry").each(function( index ) {
-			var user = $(this).children(".tagline").children(".author").text();
-			var addText = "add tag";
-			var tagline = $(this).children(".tagline");
-			if (userTags != null && userTags.hasOwnProperty(user)) {
-				var tagName = userTags[user].tag;
-				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
-				addText = "update tag";
+			if (!$(this).closest('.deleted').length) {
+				var user = $(this).children(".tagline").children(".author").text();
+				var addText = "add tag";
+				var tagline = $(this).children(".tagline");
+				if (userTags != null && userTags.hasOwnProperty(user)) {
+					var tagName = userTags[user].tag;
+					tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
+					addText = "update tag";
+				}
+
+				// Also add a tagging button
+				tagline.append("<a href='javascript:void(0)' class='redditBuddyTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
 			}
-			
-			// Also add a tagging button
-			tagline.append("<a href='javascript:void(0)' class='redditBuddyTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
 		});
 	});
 	
