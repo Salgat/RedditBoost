@@ -491,9 +491,29 @@
 
 
 
+/** 
+ * Block custom CSS
+ */
+(function ( redditBuddy, $, undefined) {
+	var cssButton = "<div id='disableCss' class='disableCss'>Disable CSS</div>"
+	
+	$(document).ready(function() {
+		$('body').append(cssButton);
+	});
+	
+	$(document).on("click", ".disableCss", function(event) {
+		$(this).text("Enable CSS");
+		$(this).removeClass('disableCss').addClass('enableCss');
+		$('link[title="applied_subreddit_stylesheet"]').prop('disabled', true)
+	});
+	
+	$(document).on("click", ".enableCss", function(event) {
+		$(this).text("Disable CSS");
+		$(this).removeClass('enableCss').addClass('disableCss');
+		$('link[title="applied_subreddit_stylesheet"]').prop('disabled', false)
+	});
 
-
-
+}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
 
 
 
