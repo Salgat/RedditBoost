@@ -400,7 +400,7 @@
 	/**
 	 * Inserts the image preview when a mouse hovers over a supported image link.
 	 */
-	$("a").mouseover(function() {
+	$("a.title").mouseover(function() {
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
 		if (isImageLink(link)) {
@@ -422,9 +422,13 @@
 	 * Returns true if the link is a supported image type.
 	 */
 	function isImageLink(link) {
-		var imagePattern = new RegExp(".(gif|jpg|jpeg|png)"); // Todo: Handle gifv and other html5 images
+		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		var result = imagePattern.test(link);
+		
+		var splitString = link.split("/");
+		var fileString = splitString.pop();
+		var fileWithoutParameters = fileString.split("?")[0];
+		var result = imagePattern.test(fileWithoutParameters);
 		return result;
 	}
 	
