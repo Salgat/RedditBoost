@@ -103,7 +103,7 @@
 	z-index: 10000;
 }
 
-#imagePopup img {
+#imagePopup .targetImage {
 	padding: 5px;
 	display: block;
 	margin-left: auto;
