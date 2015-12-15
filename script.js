@@ -1,15 +1,15 @@
 /**
  * Common functionality
  */
-(function ( redditBuddy, $, undefined) {
+(function ( RedditBoost, $, undefined) {
 	//$('head').append('<link rel="stylesheet" href="style2.css" type="text/css" />');
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 /** 
  * User Tagging
  */
-(function ( redditBuddy, $, undefined) {
+(function ( RedditBoost, $, undefined) {
 	var userTags = {};
 	
 	var tagHtmlPopup = "<div id='taggingPopup'>																								\
@@ -50,8 +50,8 @@
 	* Initiates user tagging upon receiving the user tags list from storage.
 	*/
 	window.addEventListener("RetrievedNameTags", function(event) {
-		if (event.detail.hasOwnProperty("RedditBuddy_NameTags")) {
-			userTags = event.detail["RedditBuddy_NameTags"];
+		if (event.detail.hasOwnProperty("RedditBoost_NameTags")) {
+			userTags = event.detail["RedditBoost_NameTags"];
 		}
 		
 		// Go through each user and add their tag (if it exists)
@@ -67,7 +67,7 @@
 				}
 
 				// Also add a tagging button
-				tagline.append("<a href='javascript:void(0)' class='redditBuddyTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
+				tagline.append("<a href='javascript:void(0)' class='RedditBoostTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
 			}
 		});
 	});
@@ -112,7 +112,7 @@
 			}
 			
 			var tagsList = {}; 
-			tagsList["RedditBuddy_NameTags"] = userTags;
+			tagsList["RedditBoost_NameTags"] = userTags;
 			window.dispatchEvent(new CustomEvent("StoreNameTags", { "detail": tagsList }));	
 		
 			// Go through each user and add their tag (if it exists)
@@ -155,13 +155,13 @@
 		// When page loads, initiate event to get banned users list and collapse all comments by those users
 		window.dispatchEvent(new CustomEvent("GetNameTags"));
 	});
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 /**
  * User comment banning
  */
-(function ( redditBuddy, $, undefined) {
+(function ( RedditBoost, $, undefined) {
 	var bannedUsers = [];
 	
 	/**
@@ -206,7 +206,7 @@
 	 * @param {string} textToAdd The text displayed to the user to click
 	 */
 	function tagLineSpan(userName, classToAdd, textToAdd) {
-		return "<a href='javascript:void(0)' class='" + classToAdd + " redditBuddyTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
 	}
 	
 	/**
@@ -284,13 +284,13 @@
 		window.dispatchEvent(new CustomEvent("GetCommentBans"));
 	});
 	
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 /** 
  * User submission blocking
  */
-(function ( redditBuddy, $, undefined) {
+(function ( RedditBoost, $, undefined) {
 	var bannedSubmissionUsers = [];
 	
 	/**
@@ -310,7 +310,7 @@
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			var userName = $(thisLink).children(".entry").children(".tagline").children(".author").text();
 			if (bannedSubmissionUsers.indexOf(userName) >= 0) {
-				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(thisLink).after(element);
 				$(thisLink).hide();
 			}
@@ -331,7 +331,7 @@
 	 * @param {string} textToAdd The text displayed to the user to click
 	 */
 	function tagLineSpan(userName, classToAdd, textToAdd) {
-		return "<a href='javascript:void(0)' class='" + classToAdd + " redditBuddyTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
 	}
 	
 	/**
@@ -348,7 +348,7 @@
 		
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			if ($(thisLink).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = "<div class='link redditBuddyTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(this).after(element);
 				$(this).hide();
 			}
@@ -385,12 +385,12 @@
 		// When page loads, initiate event to get banned users list and collapse all submissions by those users
 		window.dispatchEvent(new CustomEvent("GetSubmissionBans"));
 	});
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 /** 
  * Image Hover Preview
  */
-(function ( redditBuddy, $, undefined) {
+(function ( RedditBoost, $, undefined) {
 	
 	var tagHtmlPopup = "<div id='imagePopup'>																								\
 						<img class='targetImage' src='' id='imagePopupImg'>																	\
@@ -539,14 +539,14 @@
 		}, 100);
 	})();
 
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 
 /** 
  * Block custom CSS
  */
-(function ( redditBuddy, $, undefined) {
+(function ( RedditBoost, $, undefined) {
 	var bannedCss = [];
 	var cssButton = "<div id='disableCss' class='disableCss'>Disable CSS</div>"
 	
@@ -602,7 +602,7 @@
 		}
 	});
 
-}( window.redditBuddy = window.redditBuddy || {}, jQuery ));
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 
