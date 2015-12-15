@@ -393,9 +393,14 @@
 (function ( redditBuddy, $, undefined) {
 	
 	var tagHtmlPopup = "<div id='imagePopup'>																								\
-						<img src='' id='imagePopupImg'>																						\
+						<img class='targetImage' src='' id='imagePopupImg'>																	\
 						<h3 id='imagePopupTitle'>																							\
 						</div>																												";
+
+	var gifvPlayer = "<video class='targetImage' preload='auto' autoplay='autoplay' muted='muted' loop='loop' webkit-playsinline>			\
+					  <source src='' id='imageWebm'	type='video/webm'>																		\
+					  <source src='' id='imageMp4'	type='video/mp4'>																		\
+					  </video>																												";
 	
 	/**
 	 * Inserts the image preview when a mouse hovers over a supported image link.
@@ -403,11 +408,12 @@
 	$("a.title").mouseover(function() {
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
-		if (isImageLink(link)) {
-			var title = $(this).text();
-			displayImage(link, title, offset);
-			$(this).addClass("activeImagePopup");
-		}
+		var title = $(this).text();
+		var type = isImageLink(link);
+		if (type != "img" && type != "gifv") return;
+		
+		displayImage(link, title, offset, type);
+		$(this).addClass("activeImagePopup");
 	});
 	
 	/**
@@ -419,28 +425,55 @@
 	});
 	
 	/**
-	 * Returns true if the link is a supported image type.
+	 * Returns the filename with no parameters.
 	 */
-	function isImageLink(link) {
-		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
-		imagePattern.ignoreCase = true;
-		
+	function filenameWithoutParameters(link) {
 		var splitString = link.split("/");
 		var fileString = splitString.pop();
 		var fileWithoutParameters = fileString.split("?")[0];
+		return fileWithoutParameters;
+	}
+	
+	/**
+	 * Returns true if the link is a supported image type.
+	 */
+	function isImageLink(link) {
+		var fileWithoutParameters = filenameWithoutParameters(link);
+		
+		// Checking for default image types
+		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
+		imagePattern.ignoreCase = true;
 		var result = imagePattern.test(fileWithoutParameters);
-		return result;
+		if (result) return "img";
+		
+		// Checking for gifv with imgur
+		imagePattern = new RegExp(".(gifv)$"); // Todo: Handle gifv and other html5 images
+		imagePattern.ignoreCase = true;
+		result = imagePattern.test(fileWithoutParameters);
+		if (result && link.indexOf("imgur.com") >= 0) return "gifv";
+			
+		return "";
 	}
 	
 	/**
 	 * Inserts a popup with the image to preview.
 	 */
-	function displayImage(link, title, offset) {
+	function displayImage(link, title, offset, type) {
 		$('body').append(tagHtmlPopup);
 		$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
-		$('#imagePopup img').attr("src", link);
 		$('#imagePopup h3').text(title);
 		imageUpdated = false;
+		
+		if (type == "gifv") {
+			// Replace img with video player
+			$('#imagePopup img').remove();
+			$('#imagePopup').prepend(gifvPlayer);
+			var filename = filenameWithoutParameters(link);
+			$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace(".gifv", ".webm"));
+			$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace(".gifv", ".mp4"));
+		} else {
+			$('#imagePopup img').attr("src", link);
+		}
 	}
 	
 	/**
@@ -471,16 +504,16 @@
 				var popupWidth = $('#imagePopup').width();
 				var popupHeight = $('#imagePopup').height();
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
-					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft - 20);
+					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
 					imageUpdated = true;
 				} else {
-					$('#imagePopup img').removeAttr('max-width');
+					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
 				if (windowOffsetTop - 50 < popupHeight) {
-					$('#imagePopup img').css("max-height", windowOffsetTop - 50);
+					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 50);
 					imageUpdated = true;
 				} else {
-					$('#imagePopup img').removeAttr('max-height');
+					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
 				
 			} else {
@@ -491,16 +524,16 @@
 				popupWidth = $('#imagePopup').width();
 				popupHeight = $('#imagePopup').height();
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
-					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft -20);
+					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft -20);
 					imageUpdated = true;
 				} else {
-					$('#imagePopup img').removeAttr('max-width');
+					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
 				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
-					$('#imagePopup img').css("max-height", viewportHeight - windowOffsetTop - 90);
+					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - 90);
 					imageUpdated = true;
 				} else {
-					$('#imagePopup img').removeAttr('max-height');
+					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
 			}
 		}, 100);
