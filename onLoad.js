@@ -16,7 +16,7 @@ window.addEventListener("StoreNameTags", function(event) {
  * Returns the user name tags from chrome storage.
  */
 window.addEventListener("GetNameTags", function(event) {
-  chrome.storage.sync.get("RedditBuddy_NameTags", function (obj) {
+  chrome.storage.sync.get("RedditBoost_NameTags", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedNameTags", { "detail": obj }));
 });}, false);
 

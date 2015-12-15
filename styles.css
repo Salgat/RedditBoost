@@ -1,4 +1,4 @@
-.redditBuddyTaglineEntry {
+.RedditBoostTaglineEntry {
 	background-color: #f5f5f5;
 	color: #494949 !important;
 	/*border: 1px solid gray;*/
@@ -8,7 +8,7 @@
 	padding: 1px 3px;
 }
 
-.collapsed .redditBuddyTaglineEntry, .link .redditBuddyTaglineEntry {
+.collapsed .RedditBoostTaglineEntry, .link .RedditBoostTaglineEntry {
 	/* This is due to the white space disappearing when collapsed */
 	margin-left: 5px;
 	margin-right: 0;
