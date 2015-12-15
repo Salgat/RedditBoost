@@ -405,7 +405,7 @@
 	/**
 	 * Inserts the image preview when a mouse hovers over a supported image link.
 	 */
-	$("a.title").mouseover(function() {
+	$("a.title, p a").mouseover(function() {
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
 		var title = $(this).text();
@@ -419,7 +419,7 @@
 	/**
 	 * Removes the image preview when the mouse is no longer hovering over the link.
 	 */
-	$("a").mouseleave(function() {
+	$("a.title, p a").mouseleave(function() {
 		$('#imagePopup').remove();
 		$(this).removeClass("activeImagePopup");
 	});
