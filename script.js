@@ -400,7 +400,7 @@
 	/**
 	 * Inserts the image preview when a mouse hovers over a supported image link.
 	 */
-	$("a").mouseover(function() {
+	$("a.title").mouseover(function() {
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
 		if (isImageLink(link)) {
