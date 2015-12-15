@@ -397,7 +397,9 @@
 						<h3 id='imagePopupTitle'>																							\
 						</div>																												";
 	
-	
+	/**
+	 * Inserts the image preview when a mouse hovers over a supported image link.
+	 */
 	$("a").mouseover(function() {
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
@@ -408,11 +410,17 @@
 		}
 	});
 	
+	/**
+	 * Removes the image preview when the mouse is no longer hovering over the link.
+	 */
 	$("a").mouseleave(function() {
 		$('#imagePopup').remove();
 		$(this).removeClass("activeImagePopup");
 	});
 	
+	/**
+	 * Returns true if the link is a supported image type.
+	 */
 	function isImageLink(link) {
 		var imagePattern = new RegExp(".(gif|jpg|jpeg|png)"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
@@ -420,17 +428,24 @@
 		return result;
 	}
 	
+	/**
+	 * Inserts a popup with the image to preview.
+	 */
 	function displayImage(link, title, offset) {
 		$('body').append(tagHtmlPopup);
 		$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
 		$('#imagePopup img').attr("src", link);
 		$('#imagePopup h3').text(title);
+		imageUpdated = false;
 	}
 	
-	// TODO: On a timer, if popup is active, resize it (in case an image loaded later)
+	/**
+	 * Continuously checks the popup image to make sure it fits properly on the screen.
+	 */
+	var imageUpdated = false;
 	(function(){
 		setInterval(function() {
-			if ($("#imagePopup").length <= 0) {
+			if ($("#imagePopup").length <= 0 || imageUpdated) {
 				return;
 			}
 			
@@ -453,11 +468,13 @@
 				var popupHeight = $('#imagePopup').height();
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft - 20);
+					imageUpdated = true;
 				} else {
 					$('#imagePopup img').removeAttr('max-width');
 				}
 				if (windowOffsetTop - 50 < popupHeight) {
 					$('#imagePopup img').css("max-height", windowOffsetTop - 50);
+					imageUpdated = true;
 				} else {
 					$('#imagePopup img').removeAttr('max-height');
 				}
@@ -471,11 +488,13 @@
 				popupHeight = $('#imagePopup').height();
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup img').css("max-width", viewportWidth - windowOffsetLeft -20);
+					imageUpdated = true;
 				} else {
 					$('#imagePopup img').removeAttr('max-width');
 				}
 				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
 					$('#imagePopup img').css("max-height", viewportHeight - windowOffsetTop - 90);
+					imageUpdated = true;
 				} else {
 					$('#imagePopup img').removeAttr('max-height');
 				}
