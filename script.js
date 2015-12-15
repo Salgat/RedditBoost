@@ -410,7 +410,7 @@
 		var link = $(this).attr("href");
 		var title = $(this).text();
 		var type = isImageLink(link);
-		if (type != "img" && type != "gifv") return;
+		if (type != "img" && type != "gif" && type != "gifv") return;
 		
 		displayImage(link, title, offset, type);
 		$(this).addClass("activeImagePopup");
@@ -440,17 +440,23 @@
 	function isImageLink(link) {
 		var fileWithoutParameters = filenameWithoutParameters(link);
 		
-		// Checking for default image types
-		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
-		imagePattern.ignoreCase = true;
-		var result = imagePattern.test(fileWithoutParameters);
-		if (result) return "img";
-		
 		// Checking for gifv with imgur
 		imagePattern = new RegExp(".(gifv)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
 		result = imagePattern.test(fileWithoutParameters);
 		if (result && link.indexOf("imgur.com") >= 0) return "gifv";
+		
+		// Checking for gif with imgur
+		imagePattern = new RegExp(".(gif)$"); // Todo: Handle gifv and other html5 images
+		imagePattern.ignoreCase = true;
+		result = imagePattern.test(fileWithoutParameters);
+		if (result && link.indexOf("imgur.com") >= 0) return "gif";
+		
+		// Checking for default image types
+		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
+		imagePattern.ignoreCase = true;
+		var result = imagePattern.test(fileWithoutParameters);
+		if (result) return "img";
 			
 		return "";
 	}
@@ -464,13 +470,13 @@
 		$('#imagePopup h3').text(title);
 		imageUpdated = false;
 		
-		if (type == "gifv") {
+		if (type == "gifv" || type == "gif" && link.indexOf("imgur.com")) {
 			// Replace img with video player
 			$('#imagePopup img').remove();
 			$('#imagePopup').prepend(gifvPlayer);
 			var filename = filenameWithoutParameters(link);
-			$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace(".gifv", ".webm"));
-			$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace(".gifv", ".mp4"));
+			$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".webm"));
+			$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".mp4"));
 		} else {
 			$('#imagePopup img').attr("src", link);
 		}
