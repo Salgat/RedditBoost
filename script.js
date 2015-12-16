@@ -168,13 +168,13 @@
 	* Initiates user comment blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedCommentBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForComments")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			bannedList["RedditBoost_BlockedUserForComments"] = bannedUsers;
 			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 		} else {
-			bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
+			bannedUsers = event.detail["RedditBoost_BlockedUserForComments"];
 		}
 	
 		// Go through each user and add a class to hide if matching
@@ -256,7 +256,7 @@
 				bannedUsers.splice(blockedIndex, 1);
 			}
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			bannedList["RedditBoost_BlockedUserForComments"] = bannedUsers;
 			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 			
 			$("*[data-type='comment']").each(function( index, thisComment ) {
@@ -297,20 +297,20 @@
 	* Initiates user submission blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedSubmissionBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForSubmissions")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForSubmissions")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		} else {
-			bannedSubmissionUsers = event.detail["RedditPlus_BlockedUserForSubmissions"];
+			bannedSubmissionUsers = event.detail["RedditBoost_BlockedUserForSubmissions"];
 		}
 	
 		// Go through each user and hide if matching
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			var userName = $(thisLink).children(".entry").children(".tagline").children(".author").text();
 			if (bannedSubmissionUsers.indexOf(userName) >= 0) {
-				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-usernamebanned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(thisLink).after(element);
 				$(thisLink).hide();
 			}
@@ -343,12 +343,12 @@
 		
 		bannedSubmissionUsers.push(userName);
 		var bannedList = {}; 
-		bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+		bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 		window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			if ($(thisLink).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-usernamebanned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(this).after(element);
 				$(this).hide();
 			}
@@ -365,13 +365,13 @@
 		if (blockedIndex >= 0) {
 			bannedSubmissionUsers.splice(blockedIndex, 1);
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		}
 		
 		$("*[data-type='link']").each(function( index, thisSubmissionBan ) {
 			if ($(thisSubmissionBan).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = $(thisSubmissionBan).parent().find("*[data-username-banned=" + userName + "]");
+				var element = $(thisSubmissionBan).parent().find("*[data-usernamebanned=" + userName + "]");
 				element.remove();
 				$(this).show();
 			}
@@ -589,13 +589,13 @@
 	});
 	
 	window.addEventListener("RetrievedCssBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedCss")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedCss")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			bannedList["RedditBoost_BlockedCss"] = bannedCss;
 			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		} else {
-			bannedCss = event.detail["RedditPlus_BlockedCss"];
+			bannedCss = event.detail["RedditBoost_BlockedCss"];
 		}
 		
 		var subredditName = $(".redditname").text();
@@ -616,7 +616,7 @@
 		var subredditName = $(".redditname").text();
 		bannedCss.push(subredditName);
 		var bannedList = {}; 
-		bannedList["RedditPlus_BlockedCss"] = bannedCss;
+		bannedList["RedditBoost_BlockedCss"] = bannedCss;
 		window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		
 	});
@@ -631,7 +631,7 @@
 		if (blockedIndex >= 0) {
 			bannedCss.splice(blockedIndex, 1);
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			bannedList["RedditBoost_BlockedCss"] = bannedCss;
 			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		}
 	});
@@ -639,6 +639,110 @@
 }( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
+/** 
+ * Subreddit blocking
+ */
+(function ( RedditBoost, $, undefined) {
+	var bannedSubreddits = [];
+	
+	/**
+	* Initiates subreddit blocking upon receiving the banned subreddits list from storage.
+	*/
+	window.addEventListener("RetrievedSubredditBans", function(event) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedSubreddits")) {
+			// Create a new empty entry in storage
+			var bannedList = {}; 
+			bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
+			window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		} else {
+			bannedSubreddits = event.detail["RedditBoost_BlockedSubreddits"];
+		}
+		
+		// Add hiding tagline for each link
+		$("*[data-type='link']").each(function( index ) {
+			var subreddit = $(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
+			var tagline = $(this).children(".entry").children(".tagline");
+			tagline.append(tagLineSpan(subreddit, "blockSubreddit", "hide subreddit"));
+		});
+		
+		// Go through each user and hide if matching
+		$("*[data-type='link']").each(function( index, thisLink ) {
+			// Todo: Handle if link is already hidden due to banned user
+			var subreddit = $(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
+			if (bannedSubreddits.indexOf(subreddit) >= 0) {
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show /r/" + subreddit + " links</a>" + "</div>";
+				$(thisLink).after(element);
+				$(thisLink).hide();
+			}
+		});
+	}, false);
+	
+	/**
+	 * Return span element HTML to append to tagline for showing or hiding subreddits.
+	 * @param {string} userName The username this element belongs to
+	 * @param {string} classToAdd The class to add
+	 * @param {string} textToAdd The text displayed to the user to click
+	 */
+	function tagLineSpan(subreddit, classToAdd, textToAdd) {
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-subreddit='" + subreddit + "'>" + textToAdd + "</a>";
+	}
+	
+	/**
+	* Add click listener for blocking a subreddit.
+	*/
+	$(document).on("click", ".blockSubreddit", function() {
+		// Block the subreddit by replacing it with a title, username, and "show subreddit links button"
+		var subreddit = $(this).attr("data-subreddit");
+		
+		bannedSubreddits.push(subreddit);
+		var bannedList = {}; 
+		bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
+		window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		
+		$("*[data-type='link']").each(function( index, thisLink ) {
+			if ($(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show /r/" + subreddit + " links</a>" + "</div>";
+				$(this).after(element);
+				$(this).hide();
+			}
+		});
+	});
+	
+	/**
+	* Add click listener for unblocking a subreddit.
+	*/
+	$(document).on("click", ".unblockSubreddit", function() {
+		// Unblock the subreddit
+		var subreddit = $(this).attr("data-subreddit");
+		var blockedIndex = bannedSubreddits.indexOf(subreddit);
+		if (blockedIndex >= 0) {
+			bannedSubreddits.splice(blockedIndex, 1);
+			var bannedList = {}; 
+			bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
+			window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		}
+		
+		$("*[data-type='link']").each(function( index, thisSubredditBan ) {
+			if ($(thisSubredditBan).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
+				var element = $(thisSubredditBan).parent().find("*[data-subredditbanned=" + subreddit + "]");
+				element.remove();
+				$(thisSubredditBan).show();
+			}
+		});
+	});
+	
+	/**
+	* Upon loading, initiates events with onLoad.js that load subreddit blocking functionality.
+	*/
+	$(document).ready(function() {
+		// First make sure we're not on a subreddit or multi-subreddit.
+		var currentSubreddit = $(".redditname").first().text();
+		if (currentSubreddit != "" && currentSubreddit != "all") return;
+		
+		// When page loads, initiate event to get banned subreddits list and collapse all submissions by those subreddits
+		window.dispatchEvent(new CustomEvent("GetSubredditBans"));
+	});
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 
