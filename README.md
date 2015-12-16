@@ -1,17 +1,17 @@
-# RedditBuddy
+# RedditBoost
 A set of simple features to enhance reddit.
 
 ## Running
-As of now RedditBuddy only works with Chrome. To setup, complete the following instructions,
+As of now RedditBoost only works with Chrome. To setup, complete the following instructions,
 
 1. In Chrome, go to Settings->Extensions
 2. Check the "Developer mode" checkbox
 3. Click "Load unpacked extension..."
-4. Select the folder of the RedditBuddy repo and press OK
+4. Select the folder of the RedditBoost repo and press OK
 5. To disable, either uncheck the "Enabled" checkbox or click the trash can to permanently remove it
 
 ## Goals
-RedditBuddy is intended to be a lightweight and mostly seamless version of RES for a small set of features. Below are some of the intended features to be added.
+RedditBoost is intended to be a lightweight and mostly seamless version of RES for a small set of features. Below are some of the intended features to be added.
 
 - Tagging users - Completed
 - Hover over image links to preview them - Completed
