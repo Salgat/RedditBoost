@@ -7,7 +7,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["http://www.reddit.com/r/*", "https://www.reddit.com/r/*", "http://www.reddit.com/", "https://www.reddit.com/"],
+      "matches": ["*://www.reddit.com/r/*", "*://www.reddit.com/?*", "*://www.reddit.com/"],
       "css": ["styles.css"],
       "js": ["onLoad.js"]
     }
