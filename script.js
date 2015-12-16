@@ -168,13 +168,13 @@
 	* Initiates user comment blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedCommentBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForComments")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			bannedList["RedditBoost_BlockedUserForComments"] = bannedUsers;
 			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 		} else {
-			bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
+			bannedUsers = event.detail["RedditBoost_BlockedUserForComments"];
 		}
 	
 		// Go through each user and add a class to hide if matching
@@ -256,7 +256,7 @@
 				bannedUsers.splice(blockedIndex, 1);
 			}
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			bannedList["RedditBoost_BlockedUserForComments"] = bannedUsers;
 			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 			
 			$("*[data-type='comment']").each(function( index, thisComment ) {
@@ -297,13 +297,13 @@
 	* Initiates user submission blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedSubmissionBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForSubmissions")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForSubmissions")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		} else {
-			bannedSubmissionUsers = event.detail["RedditPlus_BlockedUserForSubmissions"];
+			bannedSubmissionUsers = event.detail["RedditBoost_BlockedUserForSubmissions"];
 		}
 	
 		// Go through each user and hide if matching
@@ -343,7 +343,7 @@
 		
 		bannedSubmissionUsers.push(userName);
 		var bannedList = {}; 
-		bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+		bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 		window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		
 		$("*[data-type='link']").each(function( index, thisLink ) {
@@ -365,7 +365,7 @@
 		if (blockedIndex >= 0) {
 			bannedSubmissionUsers.splice(blockedIndex, 1);
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		}
 		
@@ -589,13 +589,13 @@
 	});
 	
 	window.addEventListener("RetrievedCssBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedCss")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedCss")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			bannedList["RedditBoost_BlockedCss"] = bannedCss;
 			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		} else {
-			bannedCss = event.detail["RedditPlus_BlockedCss"];
+			bannedCss = event.detail["RedditBoost_BlockedCss"];
 		}
 		
 		var subredditName = $(".redditname").text();
@@ -616,7 +616,7 @@
 		var subredditName = $(".redditname").text();
 		bannedCss.push(subredditName);
 		var bannedList = {}; 
-		bannedList["RedditPlus_BlockedCss"] = bannedCss;
+		bannedList["RedditBoost_BlockedCss"] = bannedCss;
 		window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		
 	});
@@ -631,7 +631,7 @@
 		if (blockedIndex >= 0) {
 			bannedCss.splice(blockedIndex, 1);
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			bannedList["RedditBoost_BlockedCss"] = bannedCss;
 			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		}
 	});
@@ -649,13 +649,13 @@
 	* Initiates subreddit blocking upon receiving the banned subreddits list from storage.
 	*/
 	window.addEventListener("RetrievedSubredditBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedSubreddits")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedSubreddits")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedSubreddits"] = bannedSubreddits;
+			bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
 			window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
 		} else {
-			bannedSubreddits = event.detail["RedditPlus_BlockedSubreddits"];
+			bannedSubreddits = event.detail["RedditBoost_BlockedSubreddits"];
 		}
 	
 		

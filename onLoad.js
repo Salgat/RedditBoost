@@ -32,7 +32,7 @@ window.addEventListener("StoreCommentBans", function(event) {
  * Returns the user comments banlist from chrome storage.
  */
 window.addEventListener("GetCommentBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedUserForComments", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedUserForComments", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedCommentBans", { "detail": obj }));
 });}, false);
 
@@ -48,7 +48,7 @@ window.addEventListener("StoreSubmissionBans", function(event) {
  * Returns the user submissions banlist from chrome storage.
  */
 window.addEventListener("GetSubmissionBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedUserForSubmissions", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedUserForSubmissions", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedSubmissionBans", { "detail": obj }));
 });}, false);
 
@@ -64,7 +64,7 @@ window.addEventListener("StoreCssBans", function(event) {
  * Returns the custom css banlist from chrome storage.
  */
 window.addEventListener("GetCssBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedCss", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedCss", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedCssBans", { "detail": obj }));
 });}, false);
 
@@ -80,6 +80,6 @@ window.addEventListener("StoreSubredditBans", function(event) {
  * Returns the subreddit submissions banlist from chrome storage.
  */
 window.addEventListener("GetSubredditBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedSubreddits", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedSubreddits", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedSubredditBans", { "detail": obj }));
 });}, false);
