@@ -52,6 +52,7 @@ window.addEventListener("GetSubmissionBans", function(event) {
     window.dispatchEvent(new CustomEvent("RetrievedSubmissionBans", { "detail": obj }));
 });}, false);
 
+
 /**
  * Stores the custom css banlist in chrome storage.
  */
@@ -65,4 +66,20 @@ window.addEventListener("StoreCssBans", function(event) {
 window.addEventListener("GetCssBans", function(event) {
   chrome.storage.sync.get("RedditPlus_BlockedCss", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedCssBans", { "detail": obj }));
+});}, false);
+
+
+/**
+ * Stores the subreddit banlist in chrome storage.
+ */
+window.addEventListener("StoreSubredditBans", function(event) {
+  chrome.storage.sync.set(event.detail, function() {
+});}, false);
+
+/**
+ * Returns the subreddit submissions banlist from chrome storage.
+ */
+window.addEventListener("GetSubredditBans", function(event) {
+  chrome.storage.sync.get("RedditPlus_BlockedSubreddits", function (obj) {
+    window.dispatchEvent(new CustomEvent("RetrievedSubredditBans", { "detail": obj }));
 });}, false);

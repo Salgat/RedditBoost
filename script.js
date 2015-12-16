@@ -639,6 +639,60 @@
 }( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
+/** 
+ * Subreddit blocking
+ */
+(function ( RedditBoost, $, undefined) {
+	var bannedSubreddits = [];
+	
+	/**
+	* Initiates subreddit blocking upon receiving the banned subreddits list from storage.
+	*/
+	window.addEventListener("RetrievedSubredditBans", function(event) {
+		if (!event.detail.hasOwnProperty("RedditPlus_BlockedSubreddits")) {
+			// Create a new empty entry in storage
+			var bannedList = {}; 
+			bannedList["RedditPlus_BlockedSubreddits"] = bannedSubreddits;
+			window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		} else {
+			bannedSubreddits = event.detail["RedditPlus_BlockedSubreddits"];
+		}
+	
+		
+	}, false);
+	
+	/**
+	 * Return span element HTML to append to tagline for showing or hiding subreddits.
+	 * @param {string} userName The username this element belongs to
+	 * @param {string} classToAdd The class to add
+	 * @param {string} textToAdd The text displayed to the user to click
+	 */
+	function tagLineSpan(subreddit, classToAdd, textToAdd) {
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-subreddit='" + subreddit + "'>" + textToAdd + "</a>";
+	}
+	
+	/**
+	* Add click listener for blocking a subreddit.
+	*/
+	$(document).on("click", ".blockSubreddit", function() {
+		
+	});
+	
+	/**
+	* Add click listener for unblocking a subreddit.
+	*/
+	$(document).on("click", ".unblockSubreddit", function() {
+		
+	});
+	
+	/**
+	* Upon loading, initiates events with onLoad.js that load subreddit blocking functionality.
+	*/
+	$(document).ready(function() {
+		// When page loads, initiate event to get banned subreddits list and collapse all submissions by those subreddits
+		window.dispatchEvent(new CustomEvent("GetSubredditBans"));
+	});
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 
