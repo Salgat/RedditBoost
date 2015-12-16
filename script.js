@@ -600,6 +600,9 @@
 		
 		var subredditName = $(".redditname").text();
 		$('body').append(cssButton);
+		var buttonWidth = $("#disableCss").width();
+		console.log(buttonWidth);
+		$("#disableCss").css("width", (buttonWidth + 1) + "px");
 		if (bannedCss.indexOf(subredditName) >= 0) {
 			$("#disableCss").text("Enable CSS").removeClass("disableCss").addClass("enableCss");
 			$('link[title="applied_subreddit_stylesheet"]').prop('disabled', true);
