@@ -409,10 +409,11 @@
 		var offset = $(this).offset();
 		var link = $(this).attr("href");
 		var title = $(this).text();
-		var type = isImageLink(link);
-		if (type != "img" && type != "gif" && type != "gifv") return;
+		var result = isImageLink(link, true);
+		link = result.link;
+		if (result.type != "img" && result.type != "gif" && result.type != "gifv") return;
 		
-		displayImage(link, title, offset, type);
+		displayImage(link, title, offset, result.type);
 		$(this).addClass("activeImagePopup");
 	});
 	
@@ -437,28 +438,55 @@
 	/**
 	 * Returns true if the link is a supported image type.
 	 */
-	function isImageLink(link) {
+	function isImageLink(link, checkApi) {
 		var fileWithoutParameters = filenameWithoutParameters(link);
 		
 		// Checking for gifv with imgur
 		imagePattern = new RegExp(".(gifv)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
 		result = imagePattern.test(fileWithoutParameters);
-		if (result && link.indexOf("imgur.com") >= 0) return "gifv";
+		if (result && link.indexOf("imgur.com") >= 0) return {link: link, type: "gifv"};
 		
 		// Checking for gif with imgur
 		imagePattern = new RegExp(".(gif)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
 		result = imagePattern.test(fileWithoutParameters);
-		if (result && link.indexOf("imgur.com") >= 0) return "gif";
+		if (result && link.indexOf("imgur.com") >= 0) return {link: link, type: "gif"};
 		
 		// Checking for default image types
 		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
 		var result = imagePattern.test(fileWithoutParameters);
-		if (result) return "img";
+		if (result) return {link: link, type: "img"};
+		
+		// Does not end in any extension, so check if it is an imgur link
+		if (checkApi && link.indexOf("imgur.com") >= 0) {
+			var imageInformation = getImgurData(fileWithoutParameters);
+			if (imageInformation != null) {
+				// Try processing the image again with the link from the api call
+				var originalFileLink = imageInformation["image"]["links"]["original"];
+				if (originalFileLink != null) return isImageLink(originalFileLink, false);
+			}
+		}
 			
-		return "";
+		return {link: link, type: ""};
+	}
+	
+	/**
+	 * Returns object containing information about the given imgur link.
+	 */
+	function getImgurData(filename) {
+		var imageApiUrl = "//api.imgur.com/2/image/" + filename + ".json";
+		var result = null;
+		$.ajax({
+			async: false,
+			type: 'GET',
+			url: imageApiUrl,
+			success: function(data) {
+				result = data;
+			}
+		});
+		return result;
 	}
 	
 	/**
