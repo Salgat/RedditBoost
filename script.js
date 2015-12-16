@@ -670,7 +670,7 @@
 			// Todo: Handle if link is already hidden due to banned user
 			var subreddit = $(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
 			if (bannedSubreddits.indexOf(subreddit) >= 0) {
-				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show " + subreddit + " links</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show /r/" + subreddit + " links</a>" + "</div>";
 				$(thisLink).after(element);
 				$(thisLink).hide();
 			}
@@ -701,7 +701,7 @@
 		
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			if ($(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
-				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show " + subreddit + " links</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show /r/" + subreddit + " links</a>" + "</div>";
 				$(this).after(element);
 				$(this).hide();
 			}
@@ -736,8 +736,8 @@
 	*/
 	$(document).ready(function() {
 		// First make sure we're not on a subreddit or multi-subreddit.
-		var currentSubreddit = $(".redditname").text();
-		if (currentSubreddit != "") return;
+		var currentSubreddit = $(".redditname").first().text();
+		if (currentSubreddit != "" && currentSubreddit != "all") return;
 		
 		// When page loads, initiate event to get banned subreddits list and collapse all submissions by those subreddits
 		window.dispatchEvent(new CustomEvent("GetSubredditBans"));
