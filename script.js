@@ -56,7 +56,7 @@
 		
 		// Go through each user and add their tag (if it exists)
 		$(".entry").each(function( index ) {
-			if (!$(this).closest('.deleted').length && !$(this).find('.morecomments').length) {
+			if (!$(this).closest('.deleted').length && !$(this).first('.morecomments').length) {
 				var user = $(this).children(".tagline").children(".author").text();
 				var addText = "add tag";
 				var tagline = $(this).children(".tagline");
