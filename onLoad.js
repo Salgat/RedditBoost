@@ -1,9 +1,12 @@
 // Inject script on every page load
-var script = document.createElement('script');
-script.src = chrome.extension.getURL("script.js");
-(document.head||document.documentElement).appendChild(script);
-script.parentNode.removeChild(script);
+loadScript("/plugins/jquery.initialize/jquery.initialize.js");
+loadScript("script.js");
 
+function loadScript(scriptName) {
+  var script = document.createElement('script');
+  script.src = chrome.extension.getURL(scriptName);
+  document.body.appendChild(script);
+}
 
 /**
  * Stores the user name tags in chrome storage.
