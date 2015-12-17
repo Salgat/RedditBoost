@@ -75,7 +75,7 @@
 	 * Adds "add tag" tagline option to provided entry
 	 */
 	function addTagOption(entry) {
-		if (!$(entry).closest('.deleted').length && !$(entry).find('.morecomments').length) {
+		if (!$(entry).closest('.deleted').length && !$(entry).find('.morecomments').length && !$(entry).find('.deepthread').length) {
 			var user = $(entry).children(".tagline").children(".author").text();
 			var addText = "add tag";
 			var tagline = $(entry).children(".tagline");
@@ -182,6 +182,7 @@
  */
 (function ( RedditBoost, $, undefined) {
 	var bannedUsers = [];
+	var hideLoaded = false;
 	
 	/**
 	* Initiates user comment blocking upon receiving the banned users list from storage.
@@ -198,25 +199,58 @@
 	
 		// Go through each user and add a class to hide if matching
 		$( ".author" ).each(function( index ) {
-			var comment = $(this).parent().parent().parent();
-			if (bannedUsers != null && bannedUsers.indexOf($(this).text()) >= 0 && comment.attr("data-type") == "comment") {
-				comment.removeClass("noncollapsed").addClass("collapsed");
-			}
+			hideUserIfBanned(this);
 		});
 	
 		// Add option to block or unblock a user
-		$("*[data-type='comment']").each(function( index ) {
-			var user = $(this).children(".entry").children(".tagline").children(".author").text();
-			var tagline = $(this).children(".entry").children(".tagline");
-			if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
-				// Unhide
-				tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
-			} else {
-				// Hide
-				tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
-			}
+		$(".comment").each(function( index ) {
+			addBlockOptionTagline(this);
 		});
+		hideLoaded = true;
 	}, false);
+	
+	/**
+	 * Update newly loaded comments for both the tagline and hiding
+	 */
+	$(".author").initialize( function(){
+		if (hideLoaded) {
+			hideUserIfBanned(this);
+		}
+	});
+	
+	/**
+	 * Update newly loaded comments for both the tagline and hiding
+	 */
+	$(".comment").initialize( function(){
+		if (hideLoaded) {
+			addBlockOptionTagline(this);
+		}
+	});
+	
+	/**
+	 * Add class to hide if matching banlist.
+	 */
+	function hideUserIfBanned(element) {
+		var comment = $(element).parent().parent().parent();
+		if (bannedUsers != null && bannedUsers.indexOf($(element).text()) >= 0 && comment.attr("data-type") == "comment") {
+			comment.removeClass("noncollapsed").addClass("collapsed");
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	function addBlockOptionTagline(element) {
+		var user = $(element).children(".entry").children(".tagline").children(".author").text();
+		var tagline = $(element).children(".entry").children(".tagline");
+		if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
+			// Unhide
+			tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
+		} else {
+			// Hide
+			tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
+		}
+	}
 	
 	/**
 	 * Return span element HTML to append to tagline for showing or hiding comments.
@@ -225,7 +259,7 @@
 	 * @param {string} textToAdd The text displayed to the user to click
 	 */
 	function tagLineSpan(userName, classToAdd, textToAdd) {
-		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry hideTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
 	}
 	
 	/**
