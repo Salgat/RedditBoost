@@ -10,6 +10,7 @@
  * User Tagging
  */
 (function ( RedditBoost, $, undefined) {
+	var loadedTags = false;
 	var userTags = {};
 	
 	var tagHtmlPopup = "<div id='taggingPopup'>																								\
@@ -56,21 +57,39 @@
 		
 		// Go through each user and add their tag (if it exists)
 		$(".entry").each(function( index ) {
-			if (!$(this).closest('.deleted').length && !$(this).first('.morecomments').length) {
-				var user = $(this).children(".tagline").children(".author").text();
-				var addText = "add tag";
-				var tagline = $(this).children(".tagline");
-				if (userTags != null && userTags.hasOwnProperty(user)) {
-					var tagName = userTags[user].tag;
-					tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
-					addText = "update tag";
-				}
-
-				// Also add a tagging button
-				tagline.append("<a href='javascript:void(0)' class='RedditBoostTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
-			}
+			addTagOption(this);
 		});
+		loadedTags = true;
 	});
+	
+	/**
+	 * Update add tag tagline entries for newly loaded comments
+	 */
+	$(".entry").initialize( function(){
+		if (loadedTags && !$(this).find('.addTagName').length) {
+			addTagOption(this);
+		}
+	});
+	
+	/**
+	 * Adds "add tag" tagline option to provided entry
+	 */
+	function addTagOption(entry) {
+		if (!$(entry).closest('.deleted').length && !$(entry).find('.morecomments').length) {
+			var user = $(entry).children(".tagline").children(".author").text();
+			var addText = "add tag";
+			var tagline = $(entry).children(".tagline");
+			if (userTags != null && userTags.hasOwnProperty(user)) {
+				var tagName = userTags[user].tag;
+				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
+				addText = "update tag";
+			}
+
+			// Also add a tagging button
+			tagline.append("<a href='javascript:void(0)' class='RedditBoostTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
+		}
+	}
+	
 	
 	/**
 	 * Display tagging popup.
@@ -601,7 +620,6 @@
 		var subredditName = $(".redditname").text();
 		$('body').append(cssButton);
 		var buttonWidth = $("#disableCss").width();
-		console.log(buttonWidth);
 		$("#disableCss").css("width", (buttonWidth + 1) + "px");
 		if (bannedCss.indexOf(subredditName) >= 0) {
 			$("#disableCss").text("Enable CSS").removeClass("disableCss").addClass("enableCss");
