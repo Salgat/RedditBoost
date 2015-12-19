@@ -5,7 +5,7 @@ loadScript("script.js");
 function loadScript(scriptName) {
   var script = document.createElement('script');
   script.src = chrome.extension.getURL(scriptName);
-  document.body.appendChild(script);
+  document.head.appendChild(script);
 }
 
 /**
