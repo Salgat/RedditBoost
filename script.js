@@ -444,6 +444,8 @@
  * Image Hover Preview
  */
 (function ( RedditBoost, $, undefined) {
+	var imageCache = {};
+	var lastImage = { lastLink: "", active: false, element: null};
 	
 	var tagHtmlPopup = "<div id='imagePopup'>																								\
 						<img class='targetImage' src='' id='imagePopupImg'>																	\
@@ -459,21 +461,33 @@
 	 * Inserts the image preview when a mouse hovers over a supported image link.
 	 */
 	$("a.title, p a").mouseover(function() {
-		var offset = $(this).offset();
 		var link = $(this).attr("href");
-		var title = $(this).text();
+		lastImage.lastLink = link;
+		lastImage.element = this;
+		lastImage.active = true;
+		TryDisplayImage(this);
+	});
+	
+	/**
+	 * Try to display image.
+	 */
+	function TryDisplayImage(element) {
+		var offset = $(element).offset();
+		var link = $(element).attr("href");
+		var title = $(element).text();
 		var result = isImageLink(link, true);
 		link = result.link;
 		if (result.type != "img" && result.type != "gif" && result.type != "gifv") return;
 		
 		displayImage(link, title, offset, result.type);
-		$(this).addClass("activeImagePopup");
-	});
+		$(element).addClass("activeImagePopup");
+	}
 	
 	/**
 	 * Removes the image preview when the mouse is no longer hovering over the link.
 	 */
 	$("a.title, p a").mouseleave(function() {
+		lastImage.active = false;
 		$('#imagePopup').remove();
 		$(this).removeClass("activeImagePopup");
 	});
@@ -514,11 +528,20 @@
 		
 		// Does not end in any extension, so check if it is an imgur link
 		if (checkApi && link.indexOf("imgur.com") >= 0) {
-			var imageInformation = getImgurData(fileWithoutParameters);
-			if (imageInformation != null) {
+			if (link.indexOf("/gallery/") >= 0 || link.indexOf("/a/") >= 0) {
+				// For now block gallery imgurs
+				return {link: link, type: ""};
+			} else if (imageCache[fileWithoutParameters] == "") {
+				// Link has no image
+				return {link: link, type: ""};
+			} else if (imageCache[fileWithoutParameters] != null) {
 				// Try processing the image again with the link from the api call
-				var originalFileLink = imageInformation["image"]["links"]["original"];
-				if (originalFileLink != null) return isImageLink(originalFileLink, false);
+				//var originalFileLink = imageInformation["image"]["links"]["original"];
+				return isImageLink(imageCache[fileWithoutParameters], false);
+			} else {
+				// Retrieve image information and for now, load nothing
+				getImgurData(fileWithoutParameters);
+				return {link: link, type: ""}
 			}
 		}
 			
@@ -526,20 +549,32 @@
 	}
 	
 	/**
-	 * Returns object containing information about the given imgur link.
+	 * Image has been retrieved asynchronously, try showing the image again if still hovering
+	 */
+	window.addEventListener("RetrievedImageData", function(event) {
+		var hash = event.detail["image"]["image"]["hash"];
+		var imageUrl = event.detail["image"]["links"]["original"];
+		if (imageUrl != null) {
+			imageCache[hash] = imageUrl;
+			
+			if (lastImage.active) {
+				// Still hovering over image, display it
+				TryDisplayImage(lastImage.element);
+			}
+		} else {
+			imageCache[hash] = "";
+		}
+	}, false);
+	
+	/**
+	 * Updates the image cache and raises an event notifying that it finished.
 	 */
 	function getImgurData(filename) {
 		var imageApiUrl = "//api.imgur.com/2/image/" + filename + ".json";
-		var result = null;
-		$.ajax({
-			async: false,
-			type: 'GET',
-			url: imageApiUrl,
-			success: function(data) {
-				result = data;
-			}
+		$.get(imageApiUrl)
+		.done(function( data ) {
+			window.dispatchEvent(new CustomEvent("RetrievedImageData", { "detail": data }));
 		});
-		return result;
 	}
 	
 	/**
@@ -551,7 +586,7 @@
 		$('#imagePopup h3').text(title);
 		imageUpdated = false;
 		
-		if (type == "gifv" || type == "gif" && link.indexOf("imgur.com")) {
+		if (type == "gifv" || type == "gif" && link.indexOf("imgur.com") >= 0) {
 			// Replace img with video player
 			$('#imagePopup img').remove();
 			$('#imagePopup').prepend(gifvPlayer);
