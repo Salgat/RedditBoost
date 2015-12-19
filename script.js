@@ -557,7 +557,8 @@
 		if (imageUrl != null) {
 			imageCache[hash] = imageUrl;
 			
-			if (lastImage.active) {
+			lastImageHash = filenameWithoutParameters(lastImage.lastLink);
+			if (lastImage.active && lastImageHash == hash) {
 				// Still hovering over image, display it
 				TryDisplayImage(lastImage.element);
 			}
