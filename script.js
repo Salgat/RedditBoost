@@ -10,6 +10,7 @@
  * User Tagging
  */
 (function ( RedditBoost, $, undefined) {
+	var loadedTags = false;
 	var userTags = {};
 	
 	var tagHtmlPopup = "<div id='taggingPopup'>																								\
@@ -56,21 +57,39 @@
 		
 		// Go through each user and add their tag (if it exists)
 		$(".entry").each(function( index ) {
-			if (!$(this).closest('.deleted').length) {
-				var user = $(this).children(".tagline").children(".author").text();
-				var addText = "add tag";
-				var tagline = $(this).children(".tagline");
-				if (userTags != null && userTags.hasOwnProperty(user)) {
-					var tagName = userTags[user].tag;
-					tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
-					addText = "update tag";
-				}
-
-				// Also add a tagging button
-				tagline.append("<a href='javascript:void(0)' class='RedditBoostTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
-			}
+			addTagOption(this);
 		});
+		loadedTags = true;
 	});
+	
+	/**
+	 * Update add tag tagline entries for newly loaded comments
+	 */
+	$(".entry").initialize( function(){
+		if (loadedTags && !$(this).find('.addTagName').length) {
+			addTagOption(this);
+		}
+	});
+	
+	/**
+	 * Adds "add tag" tagline option to provided entry
+	 */
+	function addTagOption(entry) {
+		if (!$(entry).closest('.deleted').length && !$(entry).find('.morecomments').length && !$(entry).find('.deepthread').length) {
+			var user = $(entry).children(".tagline").children(".author").text();
+			var addText = "add tag";
+			var tagline = $(entry).children(".tagline");
+			if (userTags != null && userTags.hasOwnProperty(user)) {
+				var tagName = userTags[user].tag;
+				tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + userTags[user].tagColor + "'>" + tagName + "</a>");
+				addText = "update tag";
+			}
+
+			// Also add a tagging button
+			tagline.append("<a href='javascript:void(0)' class='RedditBoostTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
+		}
+	}
+	
 	
 	/**
 	 * Display tagging popup.
@@ -163,41 +182,75 @@
  */
 (function ( RedditBoost, $, undefined) {
 	var bannedUsers = [];
+	var hideLoaded = false;
 	
 	/**
 	* Initiates user comment blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedCommentBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForComments")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForComments")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			bannedList["RedditBoost_BlockedUserForComments"] = bannedUsers;
 			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 		} else {
-			bannedUsers = event.detail["RedditPlus_BlockedUserForComments"];
+			bannedUsers = event.detail["RedditBoost_BlockedUserForComments"];
 		}
 	
 		// Go through each user and add a class to hide if matching
 		$( ".author" ).each(function( index ) {
-			var comment = $(this).parent().parent().parent();
-			if (bannedUsers != null && bannedUsers.indexOf($(this).text()) >= 0 && comment.attr("data-type") == "comment") {
-				comment.removeClass("noncollapsed").addClass("collapsed");
-			}
+			hideUserIfBanned(this);
 		});
 	
 		// Add option to block or unblock a user
-		$("*[data-type='comment']").each(function( index ) {
-			var user = $(this).children(".entry").children(".tagline").children(".author").text();
-			var tagline = $(this).children(".entry").children(".tagline");
-			if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
-				// Unhide
-				tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
-			} else {
-				// Hide
-				tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
-			}
+		$(".comment").each(function( index ) {
+			addBlockOptionTagline(this);
 		});
+		hideLoaded = true;
 	}, false);
+	
+	/**
+	 * Update newly loaded comments for both the tagline and hiding
+	 */
+	$(".author").initialize( function(){
+		if (hideLoaded) {
+			hideUserIfBanned(this);
+		}
+	});
+	
+	/**
+	 * Update newly loaded comments for both the tagline and hiding
+	 */
+	$(".comment").initialize( function(){
+		if (hideLoaded) {
+			addBlockOptionTagline(this);
+		}
+	});
+	
+	/**
+	 * Add class to hide if matching banlist.
+	 */
+	function hideUserIfBanned(element) {
+		var comment = $(element).parent().parent().parent();
+		if (bannedUsers != null && bannedUsers.indexOf($(element).text()) >= 0 && comment.attr("data-type") == "comment") {
+			comment.removeClass("noncollapsed").addClass("collapsed");
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	function addBlockOptionTagline(element) {
+		var user = $(element).children(".entry").children(".tagline").children(".author").text();
+		var tagline = $(element).children(".entry").children(".tagline");
+		if (bannedUsers != null && bannedUsers.indexOf(user) >= 0) {
+			// Unhide
+			tagline.append(tagLineSpan(user, "unblockUserComments", "show user comments"));
+		} else {
+			// Hide
+			tagline.append(tagLineSpan(user, "blockUserComments", "hide user comments"));
+		}
+	}
 	
 	/**
 	 * Return span element HTML to append to tagline for showing or hiding comments.
@@ -206,7 +259,7 @@
 	 * @param {string} textToAdd The text displayed to the user to click
 	 */
 	function tagLineSpan(userName, classToAdd, textToAdd) {
-		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry hideTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
 	}
 	
 	/**
@@ -256,7 +309,7 @@
 				bannedUsers.splice(blockedIndex, 1);
 			}
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForComments"] = bannedUsers;
+			bannedList["RedditBoost_BlockedUserForComments"] = bannedUsers;
 			window.dispatchEvent(new CustomEvent("StoreCommentBans", { "detail": bannedList }));
 			
 			$("*[data-type='comment']").each(function( index, thisComment ) {
@@ -297,20 +350,20 @@
 	* Initiates user submission blocking upon receiving the banned users list from storage.
 	*/
 	window.addEventListener("RetrievedSubmissionBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedUserForSubmissions")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForSubmissions")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		} else {
-			bannedSubmissionUsers = event.detail["RedditPlus_BlockedUserForSubmissions"];
+			bannedSubmissionUsers = event.detail["RedditBoost_BlockedUserForSubmissions"];
 		}
 	
 		// Go through each user and hide if matching
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			var userName = $(thisLink).children(".entry").children(".tagline").children(".author").text();
 			if (bannedSubmissionUsers.indexOf(userName) >= 0) {
-				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-usernamebanned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(thisLink).after(element);
 				$(thisLink).hide();
 			}
@@ -343,12 +396,12 @@
 		
 		bannedSubmissionUsers.push(userName);
 		var bannedList = {}; 
-		bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+		bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 		window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		
 		$("*[data-type='link']").each(function( index, thisLink ) {
 			if ($(thisLink).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-username-banned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f5f5f5; border-radius: 3px; padding: 1px 0;' data-usernamebanned='" + userName +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockUserSubmissions' data-username='" + userName +"'>show " + userName + "'s submissions</a>" + "</div>";
 				$(this).after(element);
 				$(this).hide();
 			}
@@ -365,13 +418,13 @@
 		if (blockedIndex >= 0) {
 			bannedSubmissionUsers.splice(blockedIndex, 1);
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedUserForSubmissions"] = bannedSubmissionUsers;
+			bannedList["RedditBoost_BlockedUserForSubmissions"] = bannedSubmissionUsers;
 			window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
 		}
 		
 		$("*[data-type='link']").each(function( index, thisSubmissionBan ) {
 			if ($(thisSubmissionBan).children(".entry").children(".tagline").children(".author").text() == userName) {
-				var element = $(thisSubmissionBan).parent().find("*[data-username-banned=" + userName + "]");
+				var element = $(thisSubmissionBan).parent().find("*[data-usernamebanned=" + userName + "]");
 				element.remove();
 				$(this).show();
 			}
@@ -391,6 +444,23 @@
  * Image Hover Preview
  */
 (function ( RedditBoost, $, undefined) {
+	var imageCache = {};
+	var lastImage = { lastLink: "", active: false, element: null};
+	
+	var loadingAnimation = "<div id='loadingAnimation' class='uil-default-css' style='transform:scale(1);'>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(30deg) translate(0,-60px);transform:rotate(30deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(60deg) translate(0,-60px);transform:rotate(60deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(90deg) translate(0,-60px);transform:rotate(90deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(120deg) translate(0,-60px);transform:rotate(120deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(150deg) translate(0,-60px);transform:rotate(150deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(180deg) translate(0,-60px);transform:rotate(180deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(210deg) translate(0,-60px);transform:rotate(210deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(240deg) translate(0,-60px);transform:rotate(240deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(270deg) translate(0,-60px);transform:rotate(270deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(300deg) translate(0,-60px);transform:rotate(300deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+							</div>"
 	
 	var tagHtmlPopup = "<div id='imagePopup'>																								\
 						<img class='targetImage' src='' id='imagePopupImg'>																	\
@@ -406,23 +476,36 @@
 	 * Inserts the image preview when a mouse hovers over a supported image link.
 	 */
 	$("a.title, p a").mouseover(function() {
-		var offset = $(this).offset();
 		var link = $(this).attr("href");
-		var title = $(this).text();
+		lastImage.lastLink = link;
+		lastImage.element = this;
+		lastImage.active = true;
+		TryDisplayImage(this);
+	});
+	
+	/**
+	 * Try to display image.
+	 */
+	function TryDisplayImage(element) {
+		var offset = $(element).offset();
+		var link = $(element).attr("href");
+		var title = $(element).text();
 		var result = isImageLink(link, true);
 		link = result.link;
 		if (result.type != "img" && result.type != "gif" && result.type != "gifv") return;
 		
 		displayImage(link, title, offset, result.type);
-		$(this).addClass("activeImagePopup");
-	});
+		$(element).addClass("activeImagePopup");
+	}
 	
 	/**
 	 * Removes the image preview when the mouse is no longer hovering over the link.
 	 */
 	$("a.title, p a").mouseleave(function() {
+		lastImage.active = false;
 		$('#imagePopup').remove();
 		$(this).removeClass("activeImagePopup");
+		loadingRemoved = false;
 	});
 	
 	/**
@@ -444,49 +527,112 @@
 		// Checking for gifv with imgur
 		imagePattern = new RegExp(".(gifv)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		result = imagePattern.test(fileWithoutParameters);
+		result = imagePattern.test(fileWithoutParameters.toLowerCase());
 		if (result && link.indexOf("imgur.com") >= 0) return {link: link, type: "gifv"};
 		
 		// Checking for gif with imgur
 		imagePattern = new RegExp(".(gif)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		result = imagePattern.test(fileWithoutParameters);
-		if (result && link.indexOf("imgur.com") >= 0) return {link: link, type: "gif"};
+		result = imagePattern.test(fileWithoutParameters.toLowerCase());
+		if (result && (link.indexOf("imgur.com") >= 0 || link.indexOf("gfycat.com") >= 0)) return {link: link, type: "gif"};
 		
 		// Checking for default image types
 		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		var result = imagePattern.test(fileWithoutParameters);
+		var result = imagePattern.test(fileWithoutParameters.toLowerCase());
 		if (result) return {link: link, type: "img"};
 		
 		// Does not end in any extension, so check if it is an imgur link
 		if (checkApi && link.indexOf("imgur.com") >= 0) {
-			var imageInformation = getImgurData(fileWithoutParameters);
-			if (imageInformation != null) {
-				// Try processing the image again with the link from the api call
-				var originalFileLink = imageInformation["image"]["links"]["original"];
-				if (originalFileLink != null) return isImageLink(originalFileLink, false);
+			if (link.indexOf("/gallery/") >= 0 || link.indexOf("/a/") >= 0 || fileWithoutParameters.indexOf(",") >= 0) {
+				// For now block gallery imgurs
+				return {link: link, type: ""};
+			} else {
+				return TryLoadImageFromCache(link, fileWithoutParameters, getImgurData);
 			}
+		} else if (checkApi && link.indexOf("gfycat.com") >= 0) {
+			return TryLoadImageFromCache(link, fileWithoutParameters, getGfycatData);
 		}
 			
 		return {link: link, type: ""};
 	}
 	
+	function TryLoadImageFromCache(link, fileName, apiCaller) {
+		if (imageCache[fileName] != null && imageCache[fileName].link == "") {
+			// Link has no image
+			return {link: link, type: ""};
+		} else if (imageCache[fileName] != null) {
+			// Try processing the image again with the link from the api call
+			return isImageLink(imageCache[fileName].link, false);
+		} else {
+			// Retrieve image information and for now, load nothing
+			if (fileName != "") {
+				apiCaller(fileName);
+			}
+			return {link: link, type: ""}
+		}
+	}
+	
 	/**
-	 * Returns object containing information about the given imgur link.
+	 * Image has been retrieved asynchronously, try showing the image again if still hovering
+	 */
+	window.addEventListener("RetrievedImgurData", function(event) {
+		var hash = event.detail["image"]["image"]["hash"];
+		var imageUrl = event.detail["image"]["links"]["original"];
+		if (imageUrl != null) {
+			imageCache[hash] = {link: imageUrl};
+			
+			var lastImageHash = filenameWithoutParameters(lastImage.lastLink);
+			if (lastImage.active && lastImageHash == hash) {
+				// Still hovering over image, display it
+				TryDisplayImage(lastImage.element);
+			}
+		} else {
+			imageCache[hash] = {link: ""};
+		}
+	}, false);
+	window.addEventListener("RetrievedGfycatData", function(event) {
+		var hash = event.detail["gfyItem"]["gfyName"];
+		var imageUrl = event.detail["gfyItem"]["gifUrl"];
+		var webmUrl = event.detail["gfyItem"]["webmUrl"];
+		var mp4Url = event.detail["gfyItem"]["mp4Url"];
+		if (imageUrl != null) {
+			imageCache[hash] = {link: imageUrl, webm: webmUrl, mp4: mp4Url};
+			
+			var lastImageHash = filenameWithoutParameters(lastImage.lastLink);
+			if (lastImage.active && lastImageHash == hash) {
+				// Still hovering over image, display it
+				TryDisplayImage(lastImage.element);
+			}
+		} else {
+			imageCache[hash] = {link: ""};
+		}
+	}, false);
+	
+	/**
+	 * Updates the image cache and raises an event notifying that it finished.
 	 */
 	function getImgurData(filename) {
+		addImagePopupWithLoadingAnimation();
 		var imageApiUrl = "//api.imgur.com/2/image/" + filename + ".json";
-		var result = null;
-		$.ajax({
-			async: false,
-			type: 'GET',
-			url: imageApiUrl,
-			success: function(data) {
-				result = data;
-			}
+		$.get(imageApiUrl)
+		.done(function( data ) {
+			window.dispatchEvent(new CustomEvent("RetrievedImgurData", { "detail": data }));
 		});
-		return result;
+	}
+	function getGfycatData(filename) {
+		addImagePopupWithLoadingAnimation();
+		var imageApiUrl = "//gfycat.com/cajax/get/" + filename;
+		$.get(imageApiUrl)
+		.done(function( data ) {
+			window.dispatchEvent(new CustomEvent("RetrievedGfycatData", { "detail": data }));
+			$("#loadingAnimation").remove();
+		});
+	}
+	
+	function addImagePopupWithLoadingAnimation() {
+		$('body').append(tagHtmlPopup);
+		$('#imagePopup').prepend(loadingAnimation);
 	}
 	
 	/**
@@ -498,13 +644,19 @@
 		$('#imagePopup h3').text(title);
 		imageUpdated = false;
 		
-		if (type == "gifv" || type == "gif" && link.indexOf("imgur.com")) {
+		if (type == "gifv" || type == "gif" && (link.indexOf("imgur.com") >= 0 || link.indexOf("gfycat.com") >= 0)) {
 			// Replace img with video player
 			$('#imagePopup img').remove();
 			$('#imagePopup').prepend(gifvPlayer);
 			var filename = filenameWithoutParameters(link);
-			$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".webm"));
-			$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".mp4"));
+			if (link.indexOf("imgur.com") >= 0) {
+				$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".webm"));
+				$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".mp4"));
+			} else if (link.indexOf("gfycat.com") >= 0) {
+				var filenameWithoutExtension = filename.replace(".gif", "");
+				$('#imageWebm').attr("src", imageCache[filenameWithoutExtension].webm);
+				$('#imageMp4').attr("src", imageCache[filenameWithoutExtension].mp4);
+			}
 		} else {
 			$('#imagePopup img').attr("src", link);
 		}
@@ -513,11 +665,25 @@
 	/**
 	 * Continuously checks the popup image to make sure it fits properly on the screen.
 	 */
+	var imageHeight = 0;
+	var imageWidth = 0;
 	var imageUpdated = false;
+	var loadingRemoved = false;
 	(function(){
 		setInterval(function() {
+			if ($(".targetImage").height() > 0 && !loadingRemoved) {
+				// Once something starts loading, remove it
+				$("#loadingAnimation").remove();
+				loadingRemoved = true;
+			}
+			
 			if ($("#imagePopup").length <= 0 || imageUpdated) {
+				$("#loadingAnimation").remove();
 				return;
+			}
+			
+			if ($("#loadingAnimation").length <= 0 && !loadingRemoved) {
+				$('#imagePopup').prepend(loadingAnimation);
 			}
 			
 			// Check if there is more space above the link
@@ -528,49 +694,56 @@
 			var linkWindowOffsetTop = linkOffset.top - $(window).scrollTop();
 			var spaceBelow = viewportHeight - linkWindowOffsetTop;
 			var spaceAbove = viewportHeight - spaceBelow;
+			var windowOffsetTop = offset.top - $(window).scrollTop();
+			var windowOffsetLeft = offset.left - $(window).scrollLeft();
+			var popupWidth = $('#imagePopup').width();
+			var popupHeight = $('#imagePopup').height();
+			var linkHeight = $(lastImage.element).height();
 			var showBelow = true;
 			if (spaceAbove > spaceBelow) {
 				showBelow = false;
 				$('#imagePopup').offset({ top: $(window).scrollTop()});
-				
-				var windowOffsetTop = offset.top - $(window).scrollTop();
-				var windowOffsetLeft = offset.left - $(window).scrollLeft();
-				var popupWidth = $('#imagePopup').width();
-				var popupHeight = $('#imagePopup').height();
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
-					imageUpdated = true;
+					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (windowOffsetTop - 50 < popupHeight) {
-					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 50);
+				if (windowOffsetTop - 90 < popupHeight) {
+					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 90);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
-				
 			} else {
-				$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
+				$('#imagePopup').offset({ top: offset.top+linkHeight, left: offset.left});
 				offset.top = offset.top - 20;
-				windowOffsetTop = offset.top - $(window).scrollTop();
-				windowOffsetLeft = offset.left - $(window).scrollLeft();
-				popupWidth = $('#imagePopup').width();
-				popupHeight = $('#imagePopup').height();
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft -20);
-					imageUpdated = true;
+					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
-					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - 90);
+				if (popupHeight > viewportHeight - windowOffsetTop - linkHeight - 30) {
+					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - linkHeight - 50);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
 			}
-		}, 100);
+			
+			var currentImageHeight = $('.targetImage').height();
+			var currentImageWidth = $('.targetImage').width();
+			if ((currentImageHeight > 0 && currentImageHeight == imageHeight) && (currentImageWidth > 0 && currentImageWidth == imageWidth)) {
+				imageUpdated = true;
+				imageHeight = 0;
+				imageWidth = 0;
+			}
+			
+			// Update loading animation position
+			
+			$("#loadingAnimation").css("left", popupWidth/2 - 100);
+		}, 10);
 	})();
 
 }( window.RedditBoost = window.RedditBoost || {}, jQuery ));
@@ -589,17 +762,19 @@
 	});
 	
 	window.addEventListener("RetrievedCssBans", function(event) {
-		if (!event.detail.hasOwnProperty("RedditPlus_BlockedCss")) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedCss")) {
 			// Create a new empty entry in storage
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			bannedList["RedditBoost_BlockedCss"] = bannedCss;
 			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		} else {
-			bannedCss = event.detail["RedditPlus_BlockedCss"];
+			bannedCss = event.detail["RedditBoost_BlockedCss"];
 		}
 		
 		var subredditName = $(".redditname").text();
 		$('body').append(cssButton);
+		var buttonWidth = $("#disableCss").width();
+		$("#disableCss").css("width", (buttonWidth + 1) + "px");
 		if (bannedCss.indexOf(subredditName) >= 0) {
 			$("#disableCss").text("Enable CSS").removeClass("disableCss").addClass("enableCss");
 			$('link[title="applied_subreddit_stylesheet"]').prop('disabled', true);
@@ -616,7 +791,7 @@
 		var subredditName = $(".redditname").text();
 		bannedCss.push(subredditName);
 		var bannedList = {}; 
-		bannedList["RedditPlus_BlockedCss"] = bannedCss;
+		bannedList["RedditBoost_BlockedCss"] = bannedCss;
 		window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		
 	});
@@ -631,7 +806,7 @@
 		if (blockedIndex >= 0) {
 			bannedCss.splice(blockedIndex, 1);
 			var bannedList = {}; 
-			bannedList["RedditPlus_BlockedCss"] = bannedCss;
+			bannedList["RedditBoost_BlockedCss"] = bannedCss;
 			window.dispatchEvent(new CustomEvent("StoreCssBans", { "detail": bannedList }));
 		}
 	});
@@ -639,6 +814,110 @@
 }( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
+/** 
+ * Subreddit blocking
+ */
+(function ( RedditBoost, $, undefined) {
+	var bannedSubreddits = [];
+	
+	/**
+	* Initiates subreddit blocking upon receiving the banned subreddits list from storage.
+	*/
+	window.addEventListener("RetrievedSubredditBans", function(event) {
+		if (!event.detail.hasOwnProperty("RedditBoost_BlockedSubreddits")) {
+			// Create a new empty entry in storage
+			var bannedList = {}; 
+			bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
+			window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		} else {
+			bannedSubreddits = event.detail["RedditBoost_BlockedSubreddits"];
+		}
+		
+		// Add hiding tagline for each link
+		$("*[data-type='link']").each(function( index ) {
+			var subreddit = $(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
+			var tagline = $(this).children(".entry").children(".tagline");
+			tagline.append(tagLineSpan(subreddit, "blockSubreddit", "hide subreddit"));
+		});
+		
+		// Go through each user and hide if matching
+		$("*[data-type='link']").each(function( index, thisLink ) {
+			// Todo: Handle if link is already hidden due to banned user
+			var subreddit = $(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
+			if (bannedSubreddits.indexOf(subreddit) >= 0) {
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show /r/" + subreddit + " links</a>" + "</div>";
+				$(thisLink).after(element);
+				$(thisLink).hide();
+			}
+		});
+	}, false);
+	
+	/**
+	 * Return span element HTML to append to tagline for showing or hiding subreddits.
+	 * @param {string} userName The username this element belongs to
+	 * @param {string} classToAdd The class to add
+	 * @param {string} textToAdd The text displayed to the user to click
+	 */
+	function tagLineSpan(subreddit, classToAdd, textToAdd) {
+		return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-subreddit='" + subreddit + "'>" + textToAdd + "</a>";
+	}
+	
+	/**
+	* Add click listener for blocking a subreddit.
+	*/
+	$(document).on("click", ".blockSubreddit", function() {
+		// Block the subreddit by replacing it with a title, username, and "show subreddit links button"
+		var subreddit = $(this).attr("data-subreddit");
+		
+		bannedSubreddits.push(subreddit);
+		var bannedList = {}; 
+		bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
+		window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		
+		$("*[data-type='link']").each(function( index, thisLink ) {
+			if ($(this).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
+				var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit +"'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit +"'>show /r/" + subreddit + " links</a>" + "</div>";
+				$(this).after(element);
+				$(this).hide();
+			}
+		});
+	});
+	
+	/**
+	* Add click listener for unblocking a subreddit.
+	*/
+	$(document).on("click", ".unblockSubreddit", function() {
+		// Unblock the subreddit
+		var subreddit = $(this).attr("data-subreddit");
+		var blockedIndex = bannedSubreddits.indexOf(subreddit);
+		if (blockedIndex >= 0) {
+			bannedSubreddits.splice(blockedIndex, 1);
+			var bannedList = {}; 
+			bannedList["RedditBoost_BlockedSubreddits"] = bannedSubreddits;
+			window.dispatchEvent(new CustomEvent("StoreSubredditBans", { "detail": bannedList }));
+		}
+		
+		$("*[data-type='link']").each(function( index, thisSubredditBan ) {
+			if ($(thisSubredditBan).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
+				var element = $(thisSubredditBan).parent().find("*[data-subredditbanned=" + subreddit + "]");
+				element.remove();
+				$(thisSubredditBan).show();
+			}
+		});
+	});
+	
+	/**
+	* Upon loading, initiates events with onLoad.js that load subreddit blocking functionality.
+	*/
+	$(document).ready(function() {
+		// First make sure we're not on a subreddit or multi-subreddit.
+		var currentSubreddit = $(".redditname").first().text();
+		if (currentSubreddit != "" && currentSubreddit != "all") return;
+		
+		// When page loads, initiate event to get banned subreddits list and collapse all submissions by those subreddits
+		window.dispatchEvent(new CustomEvent("GetSubredditBans"));
+	});
+}( window.RedditBoost = window.RedditBoost || {}, jQuery ));
 
 
 

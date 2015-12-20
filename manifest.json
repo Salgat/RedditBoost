@@ -7,11 +7,11 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://www.reddit.com/r/*", "*://www.reddit.com/?*", "*://www.reddit.com/"],
+      "matches": ["*://www.reddit.com/r/*", "*://www.reddit.com/?*", "*://www.reddit.com/", "*://www.reddit.com/new*", "*://www.reddit.com/hot*", "*://www.reddit.com/top*", "*://www.reddit.com/rising*", "*://www.reddit.com/controversial*", "*://www.reddit.com/gilded*", "*://www.reddit.com/ads*"],
       "css": ["styles.css"],
       "js": ["onLoad.js"]
     }
   ],
   "manifest_version": 2,
-  "web_accessible_resources": ["script.js"]
+  "web_accessible_resources": ["script.js", "/plugins/jquery.initialize/jquery.initialize.js"]
 }

@@ -1,9 +1,12 @@
 // Inject script on every page load
-var script = document.createElement('script');
-script.src = chrome.extension.getURL("script.js");
-(document.head||document.documentElement).appendChild(script);
-script.parentNode.removeChild(script);
+loadScript("/plugins/jquery.initialize/jquery.initialize.js");
+loadScript("script.js");
 
+function loadScript(scriptName) {
+  var script = document.createElement('script');
+  script.src = chrome.extension.getURL(scriptName);
+  document.head.appendChild(script);
+}
 
 /**
  * Stores the user name tags in chrome storage.
@@ -32,7 +35,7 @@ window.addEventListener("StoreCommentBans", function(event) {
  * Returns the user comments banlist from chrome storage.
  */
 window.addEventListener("GetCommentBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedUserForComments", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedUserForComments", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedCommentBans", { "detail": obj }));
 });}, false);
 
@@ -48,9 +51,10 @@ window.addEventListener("StoreSubmissionBans", function(event) {
  * Returns the user submissions banlist from chrome storage.
  */
 window.addEventListener("GetSubmissionBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedUserForSubmissions", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedUserForSubmissions", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedSubmissionBans", { "detail": obj }));
 });}, false);
+
 
 /**
  * Stores the custom css banlist in chrome storage.
@@ -63,6 +67,22 @@ window.addEventListener("StoreCssBans", function(event) {
  * Returns the custom css banlist from chrome storage.
  */
 window.addEventListener("GetCssBans", function(event) {
-  chrome.storage.sync.get("RedditPlus_BlockedCss", function (obj) {
+  chrome.storage.sync.get("RedditBoost_BlockedCss", function (obj) {
     window.dispatchEvent(new CustomEvent("RetrievedCssBans", { "detail": obj }));
+});}, false);
+
+
+/**
+ * Stores the subreddit banlist in chrome storage.
+ */
+window.addEventListener("StoreSubredditBans", function(event) {
+  chrome.storage.sync.set(event.detail, function() {
+});}, false);
+
+/**
+ * Returns the subreddit submissions banlist from chrome storage.
+ */
+window.addEventListener("GetSubredditBans", function(event) {
+  chrome.storage.sync.get("RedditBoost_BlockedSubreddits", function (obj) {
+    window.dispatchEvent(new CustomEvent("RetrievedSubredditBans", { "detail": obj }));
 });}, false);
