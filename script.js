@@ -534,7 +534,7 @@
 		imagePattern = new RegExp(".(gif)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
 		result = imagePattern.test(fileWithoutParameters);
-		if (result && link.indexOf("imgur.com") >= 0) return {link: link, type: "gif"};
+		if (result && (link.indexOf("imgur.com") >= 0 || link.indexOf("gfycat.com") >= 0)) return {link: link, type: "gif"};
 		
 		// Checking for default image types
 		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
@@ -547,30 +547,53 @@
 			if (link.indexOf("/gallery/") >= 0 || link.indexOf("/a/") >= 0) {
 				// For now block gallery imgurs
 				return {link: link, type: ""};
-			} else if (imageCache[fileWithoutParameters] == "") {
-				// Link has no image
-				return {link: link, type: ""};
-			} else if (imageCache[fileWithoutParameters] != null) {
-				// Try processing the image again with the link from the api call
-				return isImageLink(imageCache[fileWithoutParameters], false);
 			} else {
-				// Retrieve image information and for now, load nothing
-				if (fileWithoutParameters != "") {
-					getImgurData(fileWithoutParameters);
-				}
-				return {link: link, type: ""}
+				return TryLoadImageFromCache(link, fileWithoutParameters, getImgurData);
 			}
+		} else if (checkApi && link.indexOf("gfycat.com") >= 0) {
+			return TryLoadImageFromCache(link, fileWithoutParameters, getGfycatData);
 		}
 			
 		return {link: link, type: ""};
 	}
 	
+	function TryLoadImageFromCache(link, fileName, apiCaller) {
+		if (imageCache[fileName] == "") {
+			// Link has no image
+			return {link: link, type: ""};
+		} else if (imageCache[fileName] != null) {
+			// Try processing the image again with the link from the api call
+			return isImageLink(imageCache[fileName], false);
+		} else {
+			// Retrieve image information and for now, load nothing
+			if (fileName != "") {
+				apiCaller(fileName);
+			}
+			return {link: link, type: ""}
+		}
+	}
+	
 	/**
 	 * Image has been retrieved asynchronously, try showing the image again if still hovering
 	 */
-	window.addEventListener("RetrievedImageData", function(event) {
+	window.addEventListener("RetrievedImgurData", function(event) {
 		var hash = event.detail["image"]["image"]["hash"];
 		var imageUrl = event.detail["image"]["links"]["original"];
+		if (imageUrl != null) {
+			imageCache[hash] = imageUrl;
+			
+			var lastImageHash = filenameWithoutParameters(lastImage.lastLink);
+			if (lastImage.active && lastImageHash == hash) {
+				// Still hovering over image, display it
+				TryDisplayImage(lastImage.element);
+			}
+		} else {
+			imageCache[hash] = "";
+		}
+	}, false);
+	window.addEventListener("RetrievedGfycatData", function(event) {
+		var hash = event.detail["gfyItem"]["gfyName"];
+		var imageUrl = event.detail["gfyItem"]["gifUrl"];
 		if (imageUrl != null) {
 			imageCache[hash] = imageUrl;
 			
@@ -591,7 +614,14 @@
 		var imageApiUrl = "//api.imgur.com/2/image/" + filename + ".json";
 		$.get(imageApiUrl)
 		.done(function( data ) {
-			window.dispatchEvent(new CustomEvent("RetrievedImageData", { "detail": data }));
+			window.dispatchEvent(new CustomEvent("RetrievedImgurData", { "detail": data }));
+		});
+	}
+	function getGfycatData(filename) {
+		var imageApiUrl = "//gfycat.com/cajax/get/" + filename;
+		$.get(imageApiUrl)
+		.done(function( data ) {
+			window.dispatchEvent(new CustomEvent("RetrievedGfycatData", { "detail": data }));
 		});
 	}
 	
@@ -604,13 +634,18 @@
 		$('#imagePopup h3').text(title);
 		imageUpdated = false;
 		
-		if (type == "gifv" || type == "gif" && link.indexOf("imgur.com") >= 0) {
+		if (type == "gifv" || type == "gif" && (link.indexOf("imgur.com") >= 0 || link.indexOf("gfycat.com") >= 0)) {
 			// Replace img with video player
 			$('#imagePopup img').remove();
 			$('#imagePopup').prepend(gifvPlayer);
 			var filename = filenameWithoutParameters(link);
-			$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".webm"));
-			$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".mp4"));
+			if (link.indexOf("imgur.com") >= 0) {
+				$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".webm"));
+				$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".mp4"));
+			} else if (link.indexOf("gfycat.com") >= 0) {
+				$('#imageWebm').attr("src", "//giant.gfycat.com/" + filename.replace("." + type, ".webm"));
+				$('#imageMp4').attr("src", "//giant.gfycat.com/" + filename.replace("." + type, ".mp4"));
+			}
 		} else {
 			$('#imagePopup img').attr("src", link);
 		}
