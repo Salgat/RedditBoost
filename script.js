@@ -613,6 +613,7 @@
 	 * Updates the image cache and raises an event notifying that it finished.
 	 */
 	function getImgurData(filename) {
+		addImagePopupWithLoadingAnimation();
 		var imageApiUrl = "//api.imgur.com/2/image/" + filename + ".json";
 		$.get(imageApiUrl)
 		.done(function( data ) {
@@ -620,11 +621,18 @@
 		});
 	}
 	function getGfycatData(filename) {
+		addImagePopupWithLoadingAnimation();
 		var imageApiUrl = "//gfycat.com/cajax/get/" + filename;
 		$.get(imageApiUrl)
 		.done(function( data ) {
 			window.dispatchEvent(new CustomEvent("RetrievedGfycatData", { "detail": data }));
+			$("#loadingAnimation").remove();
 		});
+	}
+	
+	function addImagePopupWithLoadingAnimation() {
+		$('body').append(tagHtmlPopup);
+		$('#imagePopup').prepend(loadingAnimation);
 	}
 	
 	/**
@@ -686,15 +694,15 @@
 			var linkWindowOffsetTop = linkOffset.top - $(window).scrollTop();
 			var spaceBelow = viewportHeight - linkWindowOffsetTop;
 			var spaceAbove = viewportHeight - spaceBelow;
+			var windowOffsetTop = offset.top - $(window).scrollTop();
+			var windowOffsetLeft = offset.left - $(window).scrollLeft();
+			var popupWidth = $('#imagePopup').width();
+			var popupHeight = $('#imagePopup').height();
 			var showBelow = true;
 			if (spaceAbove > spaceBelow) {
 				showBelow = false;
 				$('#imagePopup').offset({ top: $(window).scrollTop()});
 				
-				var windowOffsetTop = offset.top - $(window).scrollTop();
-				var windowOffsetLeft = offset.left - $(window).scrollLeft();
-				var popupWidth = $('#imagePopup').width();
-				var popupHeight = $('#imagePopup').height();
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
 					//imageUpdated = true;
@@ -711,10 +719,6 @@
 			} else {
 				$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
 				offset.top = offset.top - 20;
-				windowOffsetTop = offset.top - $(window).scrollTop();
-				windowOffsetLeft = offset.left - $(window).scrollLeft();
-				popupWidth = $('#imagePopup').width();
-				popupHeight = $('#imagePopup').height();
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft -20);
 					//imageUpdated = true;
@@ -736,6 +740,10 @@
 				imageHeight = 0;
 				imageWidth = 0;
 			}
+			
+			// Update loading animation position
+			
+			$("#loadingAnimation").css("left", popupWidth/2 - 100);
 		}, 10);
 	})();
 
