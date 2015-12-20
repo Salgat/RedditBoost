@@ -558,12 +558,12 @@
 	}
 	
 	function TryLoadImageFromCache(link, fileName, apiCaller) {
-		if (imageCache[fileName] == "") {
+		if (imageCache[fileName] != null && imageCache[fileName].link == "") {
 			// Link has no image
 			return {link: link, type: ""};
 		} else if (imageCache[fileName] != null) {
 			// Try processing the image again with the link from the api call
-			return isImageLink(imageCache[fileName], false);
+			return isImageLink(imageCache[fileName].link, false);
 		} else {
 			// Retrieve image information and for now, load nothing
 			if (fileName != "") {
@@ -580,7 +580,7 @@
 		var hash = event.detail["image"]["image"]["hash"];
 		var imageUrl = event.detail["image"]["links"]["original"];
 		if (imageUrl != null) {
-			imageCache[hash] = imageUrl;
+			imageCache[hash] = {link: imageUrl};
 			
 			var lastImageHash = filenameWithoutParameters(lastImage.lastLink);
 			if (lastImage.active && lastImageHash == hash) {
@@ -588,14 +588,16 @@
 				TryDisplayImage(lastImage.element);
 			}
 		} else {
-			imageCache[hash] = "";
+			imageCache[hash] = {link: ""};
 		}
 	}, false);
 	window.addEventListener("RetrievedGfycatData", function(event) {
 		var hash = event.detail["gfyItem"]["gfyName"];
 		var imageUrl = event.detail["gfyItem"]["gifUrl"];
+		var webmUrl = event.detail["gfyItem"]["webmUrl"];
+		var mp4Url = event.detail["gfyItem"]["mp4Url"];
 		if (imageUrl != null) {
-			imageCache[hash] = imageUrl;
+			imageCache[hash] = {link: imageUrl, webm: webmUrl, mp4: mp4Url};
 			
 			var lastImageHash = filenameWithoutParameters(lastImage.lastLink);
 			if (lastImage.active && lastImageHash == hash) {
@@ -603,7 +605,7 @@
 				TryDisplayImage(lastImage.element);
 			}
 		} else {
-			imageCache[hash] = "";
+			imageCache[hash] = {link: ""};
 		}
 	}, false);
 	
@@ -643,8 +645,9 @@
 				$('#imageWebm').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".webm"));
 				$('#imageMp4').attr("src", "//i.imgur.com/" + filename.replace("." + type, ".mp4"));
 			} else if (link.indexOf("gfycat.com") >= 0) {
-				$('#imageWebm').attr("src", "//giant.gfycat.com/" + filename.replace("." + type, ".webm"));
-				$('#imageMp4').attr("src", "//giant.gfycat.com/" + filename.replace("." + type, ".mp4"));
+				var filenameWithoutExtension = filename.replace(".gif", "");
+				$('#imageWebm').attr("src", imageCache[filenameWithoutExtension].webm);
+				$('#imageMp4').attr("src", imageCache[filenameWithoutExtension].mp4);
 			}
 		} else {
 			$('#imagePopup img').attr("src", link);
