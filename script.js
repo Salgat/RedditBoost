@@ -709,8 +709,8 @@
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (windowOffsetTop - linkHeight < popupHeight) {
-					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - linkHeight);
+				if (windowOffsetTop - 90 < popupHeight) {
+					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 90);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
