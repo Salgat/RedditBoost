@@ -698,26 +698,26 @@
 			var windowOffsetLeft = offset.left - $(window).scrollLeft();
 			var popupWidth = $('#imagePopup').width();
 			var popupHeight = $('#imagePopup').height();
+			var linkHeight = $(lastImage.element).height();
 			var showBelow = true;
 			if (spaceAbove > spaceBelow) {
 				showBelow = false;
 				$('#imagePopup').offset({ top: $(window).scrollTop()});
-				
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
 					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (windowOffsetTop - 50 < popupHeight) {
-					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 50);
+				if (windowOffsetTop - linkHeight < popupHeight) {
+					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - linkHeight);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
 				
 			} else {
-				$('#imagePopup').offset({ top: offset.top+20, left: offset.left});
+				$('#imagePopup').offset({ top: offset.top+linkHeight, left: offset.left});
 				offset.top = offset.top - 20;
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft -20);
@@ -725,8 +725,8 @@
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (popupHeight > viewportHeight - windowOffsetTop - 90) {
-					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - 90);
+				if (popupHeight > viewportHeight - windowOffsetTop - linkHeight) {
+					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - linkHeight);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
