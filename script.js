@@ -527,19 +527,19 @@
 		// Checking for gifv with imgur
 		imagePattern = new RegExp(".(gifv)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		result = imagePattern.test(fileWithoutParameters);
+		result = imagePattern.test(fileWithoutParameters.toLowerCase());
 		if (result && link.indexOf("imgur.com") >= 0) return {link: link, type: "gifv"};
 		
 		// Checking for gif with imgur
 		imagePattern = new RegExp(".(gif)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		result = imagePattern.test(fileWithoutParameters);
+		result = imagePattern.test(fileWithoutParameters.toLowerCase());
 		if (result && (link.indexOf("imgur.com") >= 0 || link.indexOf("gfycat.com") >= 0)) return {link: link, type: "gif"};
 		
 		// Checking for default image types
 		var imagePattern = new RegExp(".(gif|jpg|jpeg|png|bmp)$"); // Todo: Handle gifv and other html5 images
 		imagePattern.ignoreCase = true;
-		var result = imagePattern.test(fileWithoutParameters);
+		var result = imagePattern.test(fileWithoutParameters.toLowerCase());
 		if (result) return {link: link, type: "img"};
 		
 		// Does not end in any extension, so check if it is an imgur link
@@ -709,13 +709,12 @@
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (windowOffsetTop - linkHeight < popupHeight) {
-					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - linkHeight);
+				if (windowOffsetTop - 90 < popupHeight) {
+					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 90);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
-				
 			} else {
 				$('#imagePopup').offset({ top: offset.top+linkHeight, left: offset.left});
 				offset.top = offset.top - 20;
