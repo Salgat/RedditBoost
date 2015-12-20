@@ -699,27 +699,26 @@
 			var popupWidth = $('#imagePopup').width();
 			var popupHeight = $('#imagePopup').height();
 			var linkHeight = $(lastImage.element).height();
-			var showBelow = true;
 			if (spaceAbove > spaceBelow) {
-				showBelow = false;
-				$('#imagePopup').offset({ top: $(window).scrollTop()});
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
 					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (windowOffsetTop - 90 < popupHeight) {
-					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 90);
+				if (windowOffsetTop - 40 < popupHeight) {
+					$('#imagePopup .targetImage').css("max-height", windowOffsetTop - 40);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
+				
+				$('#imagePopup').offset({ top: offset.top - $('#imagePopup').height() - 5});
 			} else {
 				$('#imagePopup').offset({ top: offset.top+linkHeight, left: offset.left});
 				offset.top = offset.top - 20;
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
-					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft -20);
+					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
 					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
