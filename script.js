@@ -447,6 +447,21 @@
 	var imageCache = {};
 	var lastImage = { lastLink: "", active: false, element: null};
 	
+	var loadingAnimation = "<div id='loadingAnimation' class='uil-default-css' style='transform:scale(1);'>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(30deg) translate(0,-60px);transform:rotate(30deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(60deg) translate(0,-60px);transform:rotate(60deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(90deg) translate(0,-60px);transform:rotate(90deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(120deg) translate(0,-60px);transform:rotate(120deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(150deg) translate(0,-60px);transform:rotate(150deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(180deg) translate(0,-60px);transform:rotate(180deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(210deg) translate(0,-60px);transform:rotate(210deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(240deg) translate(0,-60px);transform:rotate(240deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(270deg) translate(0,-60px);transform:rotate(270deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(300deg) translate(0,-60px);transform:rotate(300deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
+							</div>"
+	
 	var tagHtmlPopup = "<div id='imagePopup'>																								\
 						<img class='targetImage' src='' id='imagePopupImg'>																	\
 						<h3 id='imagePopupTitle'>																							\
@@ -490,6 +505,7 @@
 		lastImage.active = false;
 		$('#imagePopup').remove();
 		$(this).removeClass("activeImagePopup");
+		loadingRemoved = false;
 	});
 	
 	/**
@@ -536,11 +552,12 @@
 				return {link: link, type: ""};
 			} else if (imageCache[fileWithoutParameters] != null) {
 				// Try processing the image again with the link from the api call
-				//var originalFileLink = imageInformation["image"]["links"]["original"];
 				return isImageLink(imageCache[fileWithoutParameters], false);
 			} else {
 				// Retrieve image information and for now, load nothing
-				getImgurData(fileWithoutParameters);
+				if (fileWithoutParameters != "") {
+					getImgurData(fileWithoutParameters);
+				}
 				return {link: link, type: ""}
 			}
 		}
@@ -557,7 +574,7 @@
 		if (imageUrl != null) {
 			imageCache[hash] = imageUrl;
 			
-			lastImageHash = filenameWithoutParameters(lastImage.lastLink);
+			var lastImageHash = filenameWithoutParameters(lastImage.lastLink);
 			if (lastImage.active && lastImageHash == hash) {
 				// Still hovering over image, display it
 				TryDisplayImage(lastImage.element);
@@ -602,11 +619,25 @@
 	/**
 	 * Continuously checks the popup image to make sure it fits properly on the screen.
 	 */
+	var imageHeight = 0;
+	var imageWidth = 0;
 	var imageUpdated = false;
+	var loadingRemoved = false;
 	(function(){
 		setInterval(function() {
+			if ($(".targetImage").height() > 0 && !loadingRemoved) {
+				// Once something starts loading, remove it
+				$("#loadingAnimation").remove();
+				loadingRemoved = true;
+			}
+			
 			if ($("#imagePopup").length <= 0 || imageUpdated) {
+				$("#loadingAnimation").remove();
 				return;
+			}
+			
+			if ($("#loadingAnimation").length <= 0 && !loadingRemoved) {
+				$('#imagePopup').prepend(loadingAnimation);
 			}
 			
 			// Check if there is more space above the link
@@ -628,7 +659,7 @@
 				var popupHeight = $('#imagePopup').height();
 				if (popupWidth < viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft - 20);
-					imageUpdated = true;
+					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
@@ -648,7 +679,7 @@
 				popupHeight = $('#imagePopup').height();
 				if (popupWidth > viewportWidth - windowOffsetLeft - 20) {
 					$('#imagePopup .targetImage').css("max-width", viewportWidth - windowOffsetLeft -20);
-					imageUpdated = true;
+					//imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
@@ -659,7 +690,15 @@
 					$('#imagePopup .targetImage').removeAttr('max-height');
 				}
 			}
-		}, 100);
+			
+			var currentImageHeight = $('.targetImage').height();
+			var currentImageWidth = $('.targetImage').width();
+			if ((currentImageHeight > 0 && currentImageHeight == imageHeight) && (currentImageWidth > 0 && currentImageWidth == imageWidth)) {
+				imageUpdated = true;
+				imageHeight = 0;
+				imageWidth = 0;
+			}
+		}, 10);
 	})();
 
 }( window.RedditBoost = window.RedditBoost || {}, jQuery ));
