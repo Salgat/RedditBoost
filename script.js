@@ -544,7 +544,7 @@
 		
 		// Does not end in any extension, so check if it is an imgur link
 		if (checkApi && link.indexOf("imgur.com") >= 0) {
-			if (link.indexOf("/gallery/") >= 0 || link.indexOf("/a/") >= 0) {
+			if (link.indexOf("/gallery/") >= 0 || link.indexOf("/a/") >= 0 || fileWithoutParameters.indexOf(",") >= 0) {
 				// For now block gallery imgurs
 				return {link: link, type: ""};
 			} else {
@@ -724,8 +724,8 @@
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-width');
 				}
-				if (popupHeight > viewportHeight - windowOffsetTop - linkHeight) {
-					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - linkHeight);
+				if (popupHeight > viewportHeight - windowOffsetTop - linkHeight - 30) {
+					$('#imagePopup .targetImage').css("max-height", viewportHeight - windowOffsetTop - linkHeight - 50);
 					imageUpdated = true;
 				} else {
 					$('#imagePopup .targetImage').removeAttr('max-height');
