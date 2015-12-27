@@ -8,11 +8,13 @@ Ideas:
 /// <reference path="references/jquery.d.ts" />
 /// <reference path='features/TagUser.ts'/>
 /// <reference path='features/BanUserComments.ts'/>
+/// <reference path='features/BanCustomCss.ts'/>
 
 namespace RedditBoost {
     $(document).ready(function() {
         // Initialize feature plugins
         RedditBoostPlugin.TagUser.init();
         RedditBoostPlugin.BanUserComments.init();
+        RedditBoostPlugin.BanCustomCss.init();
     });
 }

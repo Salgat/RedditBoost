@@ -25,6 +25,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/**
+ * Tag users
+ */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var TagUserPlugin = (function (_super) {
@@ -199,6 +202,9 @@ var RedditBoostPlugin;
 /// <reference path="../utils/Singleton.ts" />
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
+/**
+ * Block specific user's comments
+ */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var BanUserCommentsPlugin = (function (_super) {
@@ -357,6 +363,89 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.BanUserComments = new BanUserCommentsPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
+/// <reference path="../utils/Singleton.ts" />
+/// <reference path="../references/jquery.d.ts" />
+/// <reference path="../references/jquery.initialize.d.ts" />
+/**
+ * Block custom CSS
+ */
+var RedditBoostPlugin;
+(function (RedditBoostPlugin) {
+    var BanCustomCssPlugin = (function (_super) {
+        __extends(BanCustomCssPlugin, _super);
+        function BanCustomCssPlugin() {
+            _super.apply(this, arguments);
+            this._bannedCss = [];
+            this._cssButton = "<div id='disableCss' class='disableCss'>Disable CSS</div>";
+        }
+        Object.defineProperty(BanCustomCssPlugin.prototype, "init", {
+            get: function () { return this._init; },
+            enumerable: true,
+            configurable: true
+        });
+        BanCustomCssPlugin.prototype._init = function () {
+            var _this = this;
+            this.setSingleton();
+            window.addEventListener("RedditBoost_RetrievedCssBans", function (event) {
+                _this._handleRetrievedCssBans(event);
+            }, false);
+            $(document).on("click", ".disableCss", function (event) {
+                _this._disableCssButtonHandler(event);
+            });
+            $(document).on("click", ".enableCss", function (event) {
+                _this._enableCssButtonHandler(event);
+            });
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetCssBans"));
+        };
+        BanCustomCssPlugin.prototype._handleRetrievedCssBans = function (event) {
+            if (!event.detail.hasOwnProperty("RedditBoost_BlockedCss")) {
+                // Create a new empty entry in storage
+                var bannedList = {};
+                bannedList["RedditBoost_BlockedCss"] = this._bannedCss;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StoreCssBans", { "detail": bannedList }));
+            }
+            else {
+                this._bannedCss = event.detail["RedditBoost_BlockedCss"];
+            }
+            var subredditName = $(".redditname").text();
+            $('body').append(this._cssButton);
+            var buttonWidth = $("#disableCss").width();
+            $("#disableCss").css("width", (buttonWidth + 1) + "px");
+            if (this._bannedCss.indexOf(subredditName) >= 0) {
+                $("#disableCss").text("Enable CSS").removeClass("disableCss").addClass("enableCss");
+                $('link[title="applied_subreddit_stylesheet"]').prop('disabled', true);
+            }
+            else {
+                $('link[title="applied_subreddit_stylesheet"]').prop('disabled', false);
+            }
+        };
+        BanCustomCssPlugin.prototype._disableCssButtonHandler = function (event) {
+            $(event.currentTarget).text("Enable CSS");
+            $(event.currentTarget).removeClass('disableCss').addClass('enableCss');
+            $('link[title="applied_subreddit_stylesheet"]').prop('disabled', true);
+            var subredditName = $(".redditname").text();
+            this._bannedCss.push(subredditName);
+            var bannedList = {};
+            bannedList["RedditBoost_BlockedCss"] = this._bannedCss;
+            window.dispatchEvent(new CustomEvent("RedditBoost_StoreCssBans", { "detail": bannedList }));
+        };
+        BanCustomCssPlugin.prototype._enableCssButtonHandler = function (event) {
+            $(event.currentTarget).text("Disable CSS");
+            $(event.currentTarget).removeClass('enableCss').addClass('disableCss');
+            $('link[title="applied_subreddit_stylesheet"]').prop('disabled', false);
+            var subredditName = $(".redditname").text();
+            var blockedIndex = this._bannedCss.indexOf(subredditName);
+            if (blockedIndex >= 0) {
+                this._bannedCss.splice(blockedIndex, 1);
+                var bannedList = {};
+                bannedList["RedditBoost_BlockedCss"] = this._bannedCss;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StoreCssBans", { "detail": bannedList }));
+            }
+        };
+        return BanCustomCssPlugin;
+    })(utils.Singleton);
+    RedditBoostPlugin.BanCustomCss = new BanCustomCssPlugin();
+})(RedditBoostPlugin || (RedditBoostPlugin = {}));
 /*
 Ideas:
     - Have a main function that simply loads the modules
@@ -366,11 +455,13 @@ Ideas:
 /// <reference path="references/jquery.d.ts" />
 /// <reference path='features/TagUser.ts'/>
 /// <reference path='features/BanUserComments.ts'/>
+/// <reference path='features/BanCustomCss.ts'/>
 var RedditBoost;
 (function (RedditBoost) {
     $(document).ready(function () {
         // Initialize feature plugins
         RedditBoostPlugin.TagUser.init();
         RedditBoostPlugin.BanUserComments.init();
+        RedditBoostPlugin.BanCustomCss.init();
     });
 })(RedditBoost || (RedditBoost = {}));

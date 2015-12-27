@@ -2,6 +2,9 @@
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
 
+/**
+ * Block specific user's comments
+ */
 module RedditBoostPlugin {
     class BanUserCommentsPlugin extends utils.Singleton {
         private _bannedUsers: string[] = [];

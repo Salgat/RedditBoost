@@ -2,6 +2,9 @@
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
 
+/**
+ * Tag users
+ */
 module RedditBoostPlugin {
     class TagUserPlugin extends utils.Singleton {
         private static _tagHtmlPopup: string = "<div id='taggingPopup'>																		\
