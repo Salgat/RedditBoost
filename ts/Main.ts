@@ -2,7 +2,7 @@
 Ideas:
     - Have a main function that simply loads the modules
     - Each module holds a seperate feature for RedditBoost
-    - Compile to a single js file: tsc --out Main.js Main.ts
+    - Compile to a single js file: tsc --target ES5 --out js/Main.js ts/Main.ts
 */
 
 /// <reference path="references/jquery.d.ts" />
@@ -11,7 +11,6 @@ Ideas:
 namespace RedditBoost {
     $(document).ready(function() {
         // Initialize feature plugins
-        let tagUser = RedditBoostPlugin.TagUser;
-        tagUser.init();
+        RedditBoostPlugin.TagUser.init();
     });
 }

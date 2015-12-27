@@ -39,11 +39,6 @@ var RedditBoostPlugin;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TagUserPlugin.prototype, "self", {
-            get: function () { return this; },
-            enumerable: true,
-            configurable: true
-        });
         TagUserPlugin.prototype._init = function () {
             var _this = this;
             this.setSingleton();
@@ -205,7 +200,7 @@ var RedditBoostPlugin;
 Ideas:
     - Have a main function that simply loads the modules
     - Each module holds a seperate feature for RedditBoost
-    - Compile to a single js file: tsc --out Main.js Main.ts
+    - Compile to a single js file: tsc --target ES5 --out js/Main.js ts/Main.ts
 */
 /// <reference path="references/jquery.d.ts" />
 /// <reference path='features/TagUser.ts'/>
@@ -213,7 +208,6 @@ var RedditBoost;
 (function (RedditBoost) {
     $(document).ready(function () {
         // Initialize feature plugins
-        var tagUser = RedditBoostPlugin.TagUser;
-        tagUser.init();
+        RedditBoostPlugin.TagUser.init();
     });
 })(RedditBoost || (RedditBoost = {}));
