@@ -1,6 +1,6 @@
 // Inject script on every page load
 loadScript("/plugins/jquery.initialize/jquery.initialize.js");
-loadScript("script.js");
+loadScript("/js/Main.js");
 
 function loadScript(scriptName) {
   var script = document.createElement('script');
@@ -11,16 +11,16 @@ function loadScript(scriptName) {
 /**
  * Stores the user name tags in chrome storage.
  */
-window.addEventListener("StoreNameTags", function(event) {
+window.addEventListener("RedditBoost_StoreNameTags", function(event) {
   chrome.storage.sync.set(event.detail, function() {
 });}, false);
 
 /**
  * Returns the user name tags from chrome storage.
  */
-window.addEventListener("GetNameTags", function(event) {
+window.addEventListener("RedditBoost_GetNameTags", function(event) {
   chrome.storage.sync.get("RedditBoost_NameTags", function (obj) {
-    window.dispatchEvent(new CustomEvent("RetrievedNameTags", { "detail": obj }));
+    window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedNameTags", { "detail": obj }));
 });}, false);
 
 
