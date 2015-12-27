@@ -42,7 +42,6 @@ module RedditBoostPlugin {
 	    private _userTags: {[username: string]: {tag: string, tagColor: string}} = {};
         
         get init() { return this._init; }
-        get self() { return this; }
         
         private _init(): void {
             this.setSingleton();
