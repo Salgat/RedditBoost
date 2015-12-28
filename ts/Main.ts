@@ -10,6 +10,7 @@ Ideas:
 /// <reference path='features/BanUserComments.ts'/>
 /// <reference path='features/BanUserSubmissions.ts'/>
 /// <reference path='features/BanCustomCss.ts'/>
+/// <reference path='features/HoverPreview.ts'/>
 
 namespace RedditBoost {
     $(document).ready(function() {
@@ -18,5 +19,6 @@ namespace RedditBoost {
         RedditBoostPlugin.BanUserComments.init();
         RedditBoostPlugin.BanUserSubmissions.init();
         RedditBoostPlugin.BanCustomCss.init();
+        RedditBoostPlugin.HoverPreview.init();
     });
 }
