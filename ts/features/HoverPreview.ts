@@ -61,7 +61,8 @@ module RedditBoostPlugin {
                 let linkType =  this._getLinkType(hoveredLink);
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
-                    
+                    console.log("Supported");
+                    this._tryPreview(linkType);
                 }
             } else {
                 // Remove link preview and reset state
@@ -129,19 +130,49 @@ module RedditBoostPlugin {
          */
         private _isSupported(linkType: {link: string, extension: string, source: string, fileName: string}) : boolean {
             // First check if it has a supported media type
-            if (this._supportedMediaPattern.test(linkType.extension.toLowerCase())) {
+            if (this._isSupportedMediaPattern(linkType.extension)) {
                 return true;
             }
             
             // Next check if it's a supported domain
-            if (this._supportedDomains.test(linkType.source)) {
-                if (linkType.link.toLowerCase().indexOf('/a/') < 0 && linkType.link.toLowerCase().indexOf('/gallery/') < 0 && linkType.link.toLowerCase().indexOf(',') < 0) {
+            if (this._isSupportedDomain(linkType.source, linkType.link)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        /**
+         * Returns true if the link is a supported media pattern.
+         */
+        private _isSupportedMediaPattern(link: string) : boolean {
+            if (this._supportedMediaPattern.test(link.toLowerCase())) {
+                return true;
+            }
+            return false;
+        }
+        
+        /**
+         * Returns true if the link is a supported domain.
+         */
+        private _isSupportedDomain(domain: string, link: string) : boolean {
+            if (this._supportedDomains.test(domain)) {
+                if (link.toLowerCase().indexOf('/a/') < 0 && link.toLowerCase().indexOf('/gallery/') < 0 && link.toLowerCase().indexOf(',') < 0) {
                     // Exclude from the supported domains galleries and albums
                     return true;
                 }
             }
-            
             return false;
+        }
+        
+        /**
+         * Attempts to show a preview of the media, starting an async call for more information if needed.
+         */
+        private _tryPreview(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
+            // Determine whether the link is a supported media type or domain
+            
+            
+            
         }
     }
     

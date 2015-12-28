@@ -504,9 +504,9 @@ var RedditBoostPlugin;
             var hoveredLink = $('a.title:hover, p a:hover').first();
             if (hoveredLink.length > 0) {
                 var linkType = this._getLinkType(hoveredLink);
-                console.log(linkType);
                 if (this._isSupported(linkType)) {
-                    console.log("Is supported");
+                    console.log("Supported");
+                    this._tryPreview(linkType);
                 }
             }
             else {
@@ -544,16 +544,29 @@ var RedditBoostPlugin;
             return link;
         };
         HoverPreviewPlugin.prototype._isSupported = function (linkType) {
-            if (this._supportedMediaPattern.test(linkType.extension.toLowerCase())) {
+            if (this._isSupportedMediaPattern(linkType.extension)) {
                 return true;
             }
-            if (this._supportedDomains.test(linkType.source)) {
-                if (linkType.link.toLowerCase().indexOf('/a/') < 0 && linkType.link.toLowerCase().indexOf('/gallery/') < 0 && linkType.link.toLowerCase().indexOf(',') < 0) {
-                    console.log("Domain matches");
+            if (this._isSupportedDomain(linkType.source, linkType.link)) {
+                return true;
+            }
+            return false;
+        };
+        HoverPreviewPlugin.prototype._isSupportedMediaPattern = function (link) {
+            if (this._supportedMediaPattern.test(link.toLowerCase())) {
+                return true;
+            }
+            return false;
+        };
+        HoverPreviewPlugin.prototype._isSupportedDomain = function (domain, link) {
+            if (this._supportedDomains.test(domain)) {
+                if (link.toLowerCase().indexOf('/a/') < 0 && link.toLowerCase().indexOf('/gallery/') < 0 && link.toLowerCase().indexOf(',') < 0) {
                     return true;
                 }
             }
             return false;
+        };
+        HoverPreviewPlugin.prototype._tryPreview = function (linkType) {
         };
         return HoverPreviewPlugin;
     })(utils.Singleton);
