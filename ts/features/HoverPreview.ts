@@ -26,6 +26,7 @@ module RedditBoostPlugin {
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
         private _supportedDomains: RegExp;
+        private _imageCache: {[fileName: string]: {source: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
         
         get init() { return this._init; }
         
@@ -61,9 +62,10 @@ module RedditBoostPlugin {
                 let linkType =  this._getLinkType(hoveredLink);
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
-                    console.log("Supported");
                     this._tryPreview(linkType);
                 }
+                
+                this._adjustPreviewPopup();
             } else {
                 // Remove link preview and reset state
                 $('#RedditBoost_imagePopup').hide();
@@ -170,8 +172,28 @@ module RedditBoostPlugin {
          */
         private _tryPreview(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
             // Determine whether the link is a supported media type or domain
+            if (this._isSupportedMediaPattern(linkType.extension)) {
+                // Can immediately display the preview
+                this._displayImage(linkType);
+            } else if (this._imageCache[linkType.fileName] != null) {
+                // More information has already been received, either display the image or hide the preview popup
+                
+            } else if (this._isSupportedDomain(linkType.source, linkType.link)) {
+                // Need to request more information first, initially display loading screen   
+            }
+        }
+        
+        /**
+         * Displays the provided image.
+         */
+        private _displayImage(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
             
-            
+        }
+        
+        /**
+         * Adjusts the popup screen and automatically removes the loading animation.
+         */
+        private _adjustPreviewPopup() {
             
         }
     }
