@@ -5,9 +5,10 @@ Ideas:
     - Compile to a single js file: tsc --target ES5 --out js/Main.js ts/Main.ts
 */
 
-/// <reference path="references/jquery.d.ts" />
+/// <reference path='references/jquery.d.ts' />
 /// <reference path='features/TagUser.ts'/>
 /// <reference path='features/BanUserComments.ts'/>
+/// <reference path='features/BanUserSubmissions.ts'/>
 /// <reference path='features/BanCustomCss.ts'/>
 
 namespace RedditBoost {
@@ -15,6 +16,7 @@ namespace RedditBoost {
         // Initialize feature plugins
         RedditBoostPlugin.TagUser.init();
         RedditBoostPlugin.BanUserComments.init();
+        RedditBoostPlugin.BanUserSubmissions.init();
         RedditBoostPlugin.BanCustomCss.init();
     });
 }
