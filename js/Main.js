@@ -584,6 +584,7 @@ var RedditBoostPlugin;
 								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
 							</div>";
             this._lastLink = { lastLink: "", isActive: false, element: null };
+            this._processing = false;
         }
         Object.defineProperty(HoverPreviewPlugin.prototype, "init", {
             get: function () { return this._init; },
@@ -591,22 +592,82 @@ var RedditBoostPlugin;
             configurable: true
         });
         HoverPreviewPlugin.prototype._init = function () {
+            var _this = this;
             this.setSingleton();
+            // Setup Regex
+            this._supportedMediaPattern = new RegExp(".(gif|gifv|jpg|jpeg|png|bmp)$");
+            this._supportedMediaPattern.ignoreCase = true;
             // Create preview window (hidden by default)
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
             $('#RedditBoost_imagePopup').hide();
             // Call preview logic at ~60Hz
-            setInterval(this._showPreview, 15);
+            setInterval(function () { _this._showPreview(); }, 15);
         };
         /**
-         * Handle previewing any images/gifs if possible.
+         * Preview any images/gifs if possible. This is called on a regular basis.
          */
         HoverPreviewPlugin.prototype._showPreview = function () {
+            // Don't do any preview logic if still processing last loop
+            if (this._processing)
+                return;
+            this._processing = true;
             // Check if mouse is hovering over a link
             var hoveredLink = $('a.title:hover, p a:hover').first();
             if (hoveredLink.length > 0) {
-                console.log("hovering over valid link");
+                // Get link type and attempt to display if a supported media format
+                var linkType = this._getLinkType(hoveredLink);
+                console.log(linkType);
             }
+            else {
+                // Remove link preview and reset state
+                $('#RedditBoost_imagePopup').hide();
+                this._lastLink = { lastLink: "", isActive: false, element: null };
+            }
+            this._processing = false;
+        };
+        /**
+         * Returns what link's media type and other information.
+         */
+        HoverPreviewPlugin.prototype._getLinkType = function (linkElement) {
+            var link = $(linkElement).attr("href");
+            var fileName = HoverPreviewPlugin._getFileName(link);
+            var extension = this._getExtension(fileName);
+            var source = HoverPreviewPlugin._getDomain(link);
+            return { link: link, extension: extension, source: source, fileName: fileName };
+        };
+        /**
+         * Returns just the filename of the provided link.
+         */
+        HoverPreviewPlugin._getFileName = function (link) {
+            var linkSections = link.split("/");
+            var filenameWithParameters = linkSections.pop();
+            var fileWithoutParameters = filenameWithParameters.split("?")[0];
+            return fileWithoutParameters;
+        };
+        /**
+         * Returns the extension of the provided file name (if supported).
+         */
+        HoverPreviewPlugin.prototype._getExtension = function (fileName) {
+            var extension = fileName.split('.').pop();
+            if (!this._supportedMediaPattern.test(fileName)) {
+                return "";
+            }
+            return extension;
+        };
+        /**
+         * Returns the domain of the provided link.
+         */
+        HoverPreviewPlugin._getDomain = function (link) {
+            // Remove protocol
+            link = link.replace(/.*?:\/\//g, "");
+            // Remove route
+            link = link.split('/')[0];
+            // Remove subdomain
+            if ((link.match('/\./g') || []).length == 4 || ((link.match('/\./g') || []).length == 3 && link.indexOf('.co.') < 0)) {
+                // Test and remove the subdomain if the formatted link either has 4 periods or 3 periods and does not end with a .co.* (such as .co.uk)
+                link = link.split('.').shift().concat();
+            }
+            return link;
         };
         return HoverPreviewPlugin;
     })(utils.Singleton);
