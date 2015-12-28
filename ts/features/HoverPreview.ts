@@ -25,6 +25,7 @@ module RedditBoostPlugin {
         private _lastLink: { lastLink: string, isActive: boolean, element: Element} = { lastLink: "", isActive: false, element: null};
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
+        private _supportedDomains: RegExp;
         
         get init() { return this._init; }
         
@@ -34,6 +35,8 @@ module RedditBoostPlugin {
             // Setup Regex
             this._supportedMediaPattern = new RegExp(".(gif|gifv|jpg|jpeg|png|bmp)$");
             this._supportedMediaPattern.ignoreCase = true;
+            this._supportedDomains = new RegExp("(imgur.com|gfycat.com)$");
+            this._supportedDomains.ignoreCase = true;
             
             // Create preview window (hidden by default)
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
@@ -56,7 +59,10 @@ module RedditBoostPlugin {
             if (hoveredLink.length > 0) {
                 // Get link type and attempt to display if a supported media format
                 let linkType =  this._getLinkType(hoveredLink);
-                console.log(linkType);
+                if (this._isSupported(linkType)) {
+                    // Either start loading the preview, or do an async call to get the information needed to preview
+                    
+                }
             } else {
                 // Remove link preview and reset state
                 $('#RedditBoost_imagePopup').hide();
@@ -93,7 +99,7 @@ module RedditBoostPlugin {
          */
         private _getExtension(fileName: string) : string {
             let extension: string = fileName.split('.').pop();
-            if (!this._supportedMediaPattern.test(fileName)) {
+            if (!this._supportedMediaPattern.test(fileName.toLowerCase())) {
                 return "";
             }
             return extension;
@@ -110,12 +116,32 @@ module RedditBoostPlugin {
             link = link.split('/')[0];
             
             // Remove subdomain
-            if ((link.match('/\./g')||[]).length == 4 || ((link.match('/\./g')||[]).length == 3 && link.indexOf('.co.') < 0)) {
+            if ((link.toLowerCase().match('/\./g')||[]).length == 4 || ((link.toLowerCase().match('/\./g')||[]).length == 3 && link.toLowerCase().indexOf('.co.') < 0)) {
                 // Test and remove the subdomain if the formatted link either has 4 periods or 3 periods and does not end with a .co.* (such as .co.uk)
                 link = link.split('.').shift().concat();
             }
             
             return link;
+        }
+        
+        /**
+         * Returns whether a link can be previewed.
+         */
+        private _isSupported(linkType: {link: string, extension: string, source: string, fileName: string}) : boolean {
+            // First check if it has a supported media type
+            if (this._supportedMediaPattern.test(linkType.extension.toLowerCase())) {
+                return true;
+            }
+            
+            // Next check if it's a supported domain
+            if (this._supportedDomains.test(linkType.source)) {
+                if (linkType.link.toLowerCase().indexOf('/a/') < 0 && linkType.link.toLowerCase().indexOf('/gallery/') < 0 && linkType.link.toLowerCase().indexOf(',') < 0) {
+                    // Exclude from the supported domains galleries and albums
+                    return true;
+                }
+            }
+            
+            return false;
         }
     }
     

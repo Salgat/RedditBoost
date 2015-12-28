@@ -491,6 +491,8 @@ var RedditBoostPlugin;
             this.setSingleton();
             this._supportedMediaPattern = new RegExp(".(gif|gifv|jpg|jpeg|png|bmp)$");
             this._supportedMediaPattern.ignoreCase = true;
+            this._supportedDomains = new RegExp("(imgur.com|gfycat.com)$");
+            this._supportedDomains.ignoreCase = true;
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
             $('#RedditBoost_imagePopup').hide();
             setInterval(function () { _this._showPreview(); }, 15);
@@ -503,6 +505,9 @@ var RedditBoostPlugin;
             if (hoveredLink.length > 0) {
                 var linkType = this._getLinkType(hoveredLink);
                 console.log(linkType);
+                if (this._isSupported(linkType)) {
+                    console.log("Is supported");
+                }
             }
             else {
                 $('#RedditBoost_imagePopup').hide();
@@ -525,7 +530,7 @@ var RedditBoostPlugin;
         };
         HoverPreviewPlugin.prototype._getExtension = function (fileName) {
             var extension = fileName.split('.').pop();
-            if (!this._supportedMediaPattern.test(fileName)) {
+            if (!this._supportedMediaPattern.test(fileName.toLowerCase())) {
                 return "";
             }
             return extension;
@@ -533,10 +538,22 @@ var RedditBoostPlugin;
         HoverPreviewPlugin._getDomain = function (link) {
             link = link.replace(/.*?:\/\//g, "");
             link = link.split('/')[0];
-            if ((link.match('/\./g') || []).length == 4 || ((link.match('/\./g') || []).length == 3 && link.indexOf('.co.') < 0)) {
+            if ((link.toLowerCase().match('/\./g') || []).length == 4 || ((link.toLowerCase().match('/\./g') || []).length == 3 && link.toLowerCase().indexOf('.co.') < 0)) {
                 link = link.split('.').shift().concat();
             }
             return link;
+        };
+        HoverPreviewPlugin.prototype._isSupported = function (linkType) {
+            if (this._supportedMediaPattern.test(linkType.extension.toLowerCase())) {
+                return true;
+            }
+            if (this._supportedDomains.test(linkType.source)) {
+                if (linkType.link.toLowerCase().indexOf('/a/') < 0 && linkType.link.toLowerCase().indexOf('/gallery/') < 0 && linkType.link.toLowerCase().indexOf(',') < 0) {
+                    console.log("Domain matches");
+                    return true;
+                }
+            }
+            return false;
         };
         return HoverPreviewPlugin;
     })(utils.Singleton);
