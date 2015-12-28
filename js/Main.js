@@ -17,17 +17,11 @@ var utils;
     })();
     utils.Singleton = Singleton;
 })(utils || (utils = {}));
-/// <reference path="../utils/Singleton.ts" />
-/// <reference path="../references/jquery.d.ts" />
-/// <reference path="../references/jquery.initialize.d.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/**
- * Tag users
- */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var TagUserPlugin = (function (_super) {
@@ -45,48 +39,35 @@ var RedditBoostPlugin;
         TagUserPlugin.prototype._init = function () {
             var _this = this;
             this.setSingleton();
-            // Update add tag tagline entries for newly loaded comments
             $(".entry").initialize(function (index) {
                 if (_this._tagsLoaded && !$(index.currentTarget).find('.addTagName').length) {
                     _this._addTagOption(index.currentTarget);
                 }
             });
-            // Display tagging popup.
             $(document).on("click", ".addTagName", function (index) {
                 _this._showTagPopup(index);
             });
-            // Close tagging popup.
             $(document).on("click", "#closeTag", function (event) {
                 $('#taggingPopup').remove();
             });
-            // Add click listener for tagging a user.
             $(document).on("click", "#saveTag", function (index) {
                 _this._saveTag(index);
             });
-            // Handle event to process retrieved tags from memory
             window.addEventListener("RedditBoost_RetrievedNameTags", function (event) {
                 _this._handleRetrievedTags(event);
             });
-            // Initiate event to get banned users list and collapse all comments by those users
             window.dispatchEvent(new CustomEvent("RedditBoost_GetNameTags"));
         };
-        /**
-         * Load tags and tagging interface onto page.
-         */
         TagUserPlugin.prototype._handleRetrievedTags = function (event) {
             var _this = this;
             if (event.detail.hasOwnProperty("RedditBoost_NameTags")) {
                 this._userTags = event.detail["RedditBoost_NameTags"];
             }
-            // Go through each user and add their tag (if it exists)
             $(".entry").each(function (index, elem) {
                 _this._addTagOption(elem);
             });
             this._tagsLoaded = true;
         };
-        /**
-         * Adds "add tag" tagline option to provided entry
-         */
         TagUserPlugin.prototype._addTagOption = function (entry) {
             if (!$(entry).closest('.deleted').length && !$(entry).find('.morecomments').length && !$(entry).find('.deepthread').length) {
                 var user = $(entry).children(".tagline").children(".author").text();
@@ -97,13 +78,9 @@ var RedditBoostPlugin;
                     tagline.children(".author").after("<span class='userTag' style='margin-right: 5px;" + RedditBoostPlugin.TagUser._userTags[user].tagColor + "'>" + tagName + "</a>");
                     addText = "update tag";
                 }
-                // Also add a tagging button
                 tagline.append("<a href='javascript:void(0)' class='RedditBoostTaglineEntry addTagName' data-username='" + user + "'>" + addText + "</a>");
             }
         };
-        /**
-         * Display tagging popup.
-         */
         TagUserPlugin.prototype._showTagPopup = function (index) {
             var userName = $(index.currentTarget).attr("data-username");
             var offset = $(index.currentTarget).offset();
@@ -112,18 +89,13 @@ var RedditBoostPlugin;
             $('#taggingPopup').offset({ top: offset.top + 15, left: offset.left });
             $('#saveTag').attr("data-username", userName);
         };
-        /**
-         * Using tag popup, saves tag for user.
-         */
         TagUserPlugin.prototype._saveTag = function (index) {
             var _this = this;
             var userName = $(index.currentTarget).attr("data-username");
             var tag = $('#tagInput').val();
             var tagColor = $('#colorSelector option:selected').attr('style');
-            // Save Tag
             if (tag != null) {
                 if (tag == "") {
-                    // Empty string, remove tag
                     delete this._userTags[userName];
                 }
                 else {
@@ -132,7 +104,6 @@ var RedditBoostPlugin;
                 var tagsList = {};
                 tagsList["RedditBoost_NameTags"] = this._userTags;
                 window.dispatchEvent(new CustomEvent("RedditBoost_StoreNameTags", { "detail": tagsList }));
-                // Go through each user and add their tag (if it exists)
                 $(".entry").each(function (index, elem) {
                     var tagline = $(elem).children(".tagline");
                     var user = tagline.children(".author").text();
@@ -142,7 +113,6 @@ var RedditBoostPlugin;
                             tagName = _this._userTags[user].tag;
                         }
                         if (tag == "" || tagName == "") {
-                            // Remove tag
                             tagline.children('.userTag').remove();
                         }
                         else if (tagline.children('.userTag').length) {
@@ -155,7 +125,6 @@ var RedditBoostPlugin;
                         if (tag == "") {
                             addText = "add tag";
                         }
-                        // Also update the tagging button
                         tagline.children(".addTagName").text(addText);
                     }
                 });
@@ -199,12 +168,6 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.TagUser = new TagUserPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
-/// <reference path="../utils/Singleton.ts" />
-/// <reference path="../references/jquery.d.ts" />
-/// <reference path="../references/jquery.initialize.d.ts" />
-/**
- * Block specific user's comments
- */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var BanUserCommentsPlugin = (function (_super) {
@@ -222,25 +185,17 @@ var RedditBoostPlugin;
         BanUserCommentsPlugin.prototype._init = function () {
             var _this = this;
             this.setSingleton();
-            // Add click listener for blocking a user's comments.
             $(document).on("click", ".unblockUserComments", function (event) {
                 _this._blockOrUnblockUserComments(event.currentTarget, _this._bannedUsers, false);
             });
-            /// Add click listener for unblocking a user's comments.
             $(document).on("click", ".blockUserComments", function (event) {
                 _this._blockOrUnblockUserComments(event.currentTarget, _this._bannedUsers, true);
             });
-            /**
-             * Update newly loaded comments for both the tagline and hiding
-             */
             $(".author").initialize(function (index) {
                 if (_this._hideLoaded) {
                     _this._hideUserIfBanned(index.currentTarget);
                 }
             });
-            /**
-             * Update newly loaded comments for both the tagline and hiding
-             */
             $(".comment").initialize(function (index) {
                 if (_this._hideLoaded) {
                     _this._addBlockOptionTagline(index.currentTarget);
@@ -251,13 +206,9 @@ var RedditBoostPlugin;
             });
             window.dispatchEvent(new CustomEvent("RedditBoost_GetCommentBans"));
         };
-        /**
-         * Block banned user comments and add block option next to usernames.
-         */
         BanUserCommentsPlugin.prototype._handleRetrievedCommentBans = function (event) {
             var _this = this;
             if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForComments")) {
-                // Create a new empty entry in storage
                 var bannedList = {};
                 bannedList["RedditBoost_BlockedUserForComments"] = this._bannedUsers;
                 window.dispatchEvent(new CustomEvent("RedditBoost_StoreCommentBans", { "detail": bannedList }));
@@ -265,55 +216,33 @@ var RedditBoostPlugin;
             else {
                 this._bannedUsers = event.detail["RedditBoost_BlockedUserForComments"];
             }
-            // Go through each user and add a class to hide if matching
             $(".author").each(function (index, elem) {
                 _this._hideUserIfBanned(elem);
             });
-            // Add option to block or unblock a user
             $(".comment").each(function (index, elem) {
                 _this._addBlockOptionTagline(elem);
             });
             this._hideLoaded = true;
         };
-        /**
-         * Add class to hide if matching banlist.
-         */
         BanUserCommentsPlugin.prototype._hideUserIfBanned = function (element) {
             var comment = $(element).parent().parent().parent();
             if (this._bannedUsers != null && this._bannedUsers.indexOf($(element).text()) >= 0 && comment.attr("data-type") == "comment") {
                 comment.removeClass("noncollapsed").addClass("collapsed");
             }
         };
-        /**
-         * Adds option to block user's comments in tagline.
-         */
         BanUserCommentsPlugin.prototype._addBlockOptionTagline = function (element) {
             var user = $(element).children(".entry").children(".tagline").children(".author").text();
             var tagline = $(element).children(".entry").children(".tagline");
             if (this._bannedUsers != null && this._bannedUsers.indexOf(user) >= 0) {
-                // Unhide
                 tagline.append(this._tagLineSpan(user, "unblockUserComments", "show user comments"));
             }
             else {
-                // Hide
                 tagline.append(this._tagLineSpan(user, "blockUserComments", "hide user comments"));
             }
         };
-        /**
-         * Return span element HTML to append to tagline for showing or hiding comments.
-         * @param {string} userName The username this element belongs to
-         * @param {string} classToAdd The class to add (either blockUserComments or unblockUserComments)
-         * @param {string} textToAdd The text displayed to the user to click
-         */
         BanUserCommentsPlugin.prototype._tagLineSpan = function (userName, classToAdd, textToAdd) {
             return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry hideTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
         };
-        /**
-        * Blocks or unblocks a user's comments based on parameters.
-        * @param {object} thisElement The element of the comment.
-        * @param {array} bannedUsers An array of banned users.
-        * @param {bool} isBlocking Whether to block or not the user's comments.
-        */
         BanUserCommentsPlugin.prototype._blockOrUnblockUserComments = function (thisElement, bannedUsers, isBlocking) {
             var blockingClass;
             if (!isBlocking) {
@@ -363,12 +292,6 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.BanUserComments = new BanUserCommentsPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
-/// <reference path="../utils/Singleton.ts" />
-/// <reference path="../references/jquery.d.ts" />
-/// <reference path="../references/jquery.initialize.d.ts" />
-/**
- * Block specific user's submission
- */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var BanUserSubmissionsPlugin = (function (_super) {
@@ -386,25 +309,20 @@ var RedditBoostPlugin;
         BanUserSubmissionsPlugin.prototype._init = function () {
             var _this = this;
             this.setSingleton();
-            // Add click listener for blocking a user's submissions.
             $(document).on("click", ".blockUserSubmissions", function (event) {
                 _this._blockUserSubmissions(event.currentTarget);
             });
-            // Add click listener for unblocking a user's submissions.
             $(document).on("click", ".unblockUserSubmissions", function (event) {
                 _this._unblockUserSubmissions(event.currentTarget);
             });
-            // Initiates user submission blocking upon receiving the banned users list from storage.
             window.addEventListener("RedditBoost_RetrievedSubmissionBans", function (event) {
                 _this._retrievedSubmissionsBans(event);
             }, false);
-            // When page loads, initiate event to get banned users list and collapse all submissions by those users
             window.dispatchEvent(new CustomEvent("RedditBoost_GetSubmissionBans"));
         };
         BanUserSubmissionsPlugin.prototype._retrievedSubmissionsBans = function (event) {
             var _this = this;
             if (!event.detail.hasOwnProperty("RedditBoost_BlockedUserForSubmissions")) {
-                // Create a new empty entry in storage
                 var bannedList = {};
                 bannedList["RedditBoost_BlockedUserForSubmissions"] = this._bannedSubmissionUsers;
                 window.dispatchEvent(new CustomEvent("StoreSubmissionBans", { "detail": bannedList }));
@@ -412,7 +330,6 @@ var RedditBoostPlugin;
             else {
                 this._bannedSubmissionUsers = event.detail["RedditBoost_BlockedUserForSubmissions"];
             }
-            // Go through each user and hide if matching
             $("*[data-type='link']").each(function (index, thisLink) {
                 var userName = $(thisLink).children(".entry").children(".tagline").children(".author").text();
                 if (_this._bannedSubmissionUsers.indexOf(userName) >= 0) {
@@ -421,7 +338,6 @@ var RedditBoostPlugin;
                     $(thisLink).hide();
                 }
             });
-            // Add option to block or unblock a user
             $("*[data-type='link']").each(function (index, thisLink) {
                 var user = $(thisLink).children(".entry").children(".tagline").children(".author").text();
                 var tagline = $(thisLink).children(".entry").children(".tagline");
@@ -429,7 +345,6 @@ var RedditBoostPlugin;
             });
         };
         BanUserSubmissionsPlugin.prototype._blockUserSubmissions = function (elem) {
-            // Block the user by replacing it with a title, username, and "show link button"
             var userName = $(elem).attr("data-username");
             this._bannedSubmissionUsers.push(userName);
             var bannedList = {};
@@ -444,7 +359,6 @@ var RedditBoostPlugin;
             });
         };
         BanUserSubmissionsPlugin.prototype._unblockUserSubmissions = function (elem) {
-            // Unblock the user
             var userName = $(elem).attr("data-username");
             var blockedIndex = this._bannedSubmissionUsers.indexOf(userName);
             if (blockedIndex >= 0) {
@@ -461,12 +375,6 @@ var RedditBoostPlugin;
                 }
             });
         };
-        /**
-         * Return span element HTML to append to tagline for showing or hiding submissions.
-         * @param {string} userName The username this element belongs to
-         * @param {string} classToAdd The class to add (either blockUserSubmissionBans or unblockUserSubmissionBans)
-         * @param {string} textToAdd The text displayed to the user to click
-         */
         BanUserSubmissionsPlugin.prototype._tagLineSpan = function (userName, classToAdd, textToAdd) {
             return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
         };
@@ -474,12 +382,6 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.BanUserSubmissions = new BanUserSubmissionsPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
-/// <reference path="../utils/Singleton.ts" />
-/// <reference path="../references/jquery.d.ts" />
-/// <reference path="../references/jquery.initialize.d.ts" />
-/**
- * Block custom CSS
- */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var BanCustomCssPlugin = (function (_super) {
@@ -510,7 +412,6 @@ var RedditBoostPlugin;
         };
         BanCustomCssPlugin.prototype._handleRetrievedCssBans = function (event) {
             if (!event.detail.hasOwnProperty("RedditBoost_BlockedCss")) {
-                // Create a new empty entry in storage
                 var bannedList = {};
                 bannedList["RedditBoost_BlockedCss"] = this._bannedCss;
                 window.dispatchEvent(new CustomEvent("RedditBoost_StoreCssBans", { "detail": bannedList }));
@@ -557,12 +458,6 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.BanCustomCss = new BanCustomCssPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
-/// <reference path="../utils/Singleton.ts" />
-/// <reference path="../references/jquery.d.ts" />
-/// <reference path="../references/jquery.initialize.d.ts" />
-/**
- * Preview certain media links.
- */
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var HoverPreviewPlugin = (function (_super) {
@@ -594,40 +489,27 @@ var RedditBoostPlugin;
         HoverPreviewPlugin.prototype._init = function () {
             var _this = this;
             this.setSingleton();
-            // Setup Regex
             this._supportedMediaPattern = new RegExp(".(gif|gifv|jpg|jpeg|png|bmp)$");
             this._supportedMediaPattern.ignoreCase = true;
-            // Create preview window (hidden by default)
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
             $('#RedditBoost_imagePopup').hide();
-            // Call preview logic at ~60Hz
             setInterval(function () { _this._showPreview(); }, 15);
         };
-        /**
-         * Preview any images/gifs if possible. This is called on a regular basis.
-         */
         HoverPreviewPlugin.prototype._showPreview = function () {
-            // Don't do any preview logic if still processing last loop
             if (this._processing)
                 return;
             this._processing = true;
-            // Check if mouse is hovering over a link
             var hoveredLink = $('a.title:hover, p a:hover').first();
             if (hoveredLink.length > 0) {
-                // Get link type and attempt to display if a supported media format
                 var linkType = this._getLinkType(hoveredLink);
                 console.log(linkType);
             }
             else {
-                // Remove link preview and reset state
                 $('#RedditBoost_imagePopup').hide();
                 this._lastLink = { lastLink: "", isActive: false, element: null };
             }
             this._processing = false;
         };
-        /**
-         * Returns what link's media type and other information.
-         */
         HoverPreviewPlugin.prototype._getLinkType = function (linkElement) {
             var link = $(linkElement).attr("href");
             var fileName = HoverPreviewPlugin._getFileName(link);
@@ -635,18 +517,12 @@ var RedditBoostPlugin;
             var source = HoverPreviewPlugin._getDomain(link);
             return { link: link, extension: extension, source: source, fileName: fileName };
         };
-        /**
-         * Returns just the filename of the provided link.
-         */
         HoverPreviewPlugin._getFileName = function (link) {
             var linkSections = link.split("/");
             var filenameWithParameters = linkSections.pop();
             var fileWithoutParameters = filenameWithParameters.split("?")[0];
             return fileWithoutParameters;
         };
-        /**
-         * Returns the extension of the provided file name (if supported).
-         */
         HoverPreviewPlugin.prototype._getExtension = function (fileName) {
             var extension = fileName.split('.').pop();
             if (!this._supportedMediaPattern.test(fileName)) {
@@ -654,17 +530,10 @@ var RedditBoostPlugin;
             }
             return extension;
         };
-        /**
-         * Returns the domain of the provided link.
-         */
         HoverPreviewPlugin._getDomain = function (link) {
-            // Remove protocol
             link = link.replace(/.*?:\/\//g, "");
-            // Remove route
             link = link.split('/')[0];
-            // Remove subdomain
             if ((link.match('/\./g') || []).length == 4 || ((link.match('/\./g') || []).length == 3 && link.indexOf('.co.') < 0)) {
-                // Test and remove the subdomain if the formatted link either has 4 periods or 3 periods and does not end with a .co.* (such as .co.uk)
                 link = link.split('.').shift().concat();
             }
             return link;
@@ -673,22 +542,9 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.HoverPreview = new HoverPreviewPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
-/*
-Ideas:
-    - Have a main function that simply loads the modules
-    - Each module holds a seperate feature for RedditBoost
-    - Compile to a single js file: tsc --target ES5 --out js/Main.js ts/Main.ts
-*/
-/// <reference path='references/jquery.d.ts' />
-/// <reference path='features/TagUser.ts'/>
-/// <reference path='features/BanUserComments.ts'/>
-/// <reference path='features/BanUserSubmissions.ts'/>
-/// <reference path='features/BanCustomCss.ts'/>
-/// <reference path='features/HoverPreview.ts'/>
 var RedditBoost;
 (function (RedditBoost) {
     $(document).ready(function () {
-        // Initialize feature plugins
         RedditBoostPlugin.TagUser.init();
         RedditBoostPlugin.BanUserComments.init();
         RedditBoostPlugin.BanUserSubmissions.init();
@@ -696,3 +552,4 @@ var RedditBoost;
         RedditBoostPlugin.HoverPreview.init();
     });
 })(RedditBoost || (RedditBoost = {}));
+//# sourceMappingURL=Main.js.map
