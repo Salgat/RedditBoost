@@ -618,18 +618,37 @@ var RedditBoostPlugin;
             var popupWidth = $('#RedditBoost_imagePopup').width();
             var region = this._findMostSpace(this._mousePosition);
             if (region == Region.Left) {
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: 10 });
             }
             else if (region == Region.Right) {
                 $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x + 10 });
             }
             else if (region == Region.Above) {
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: 10 });
             }
             else {
+                $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y + 10, left: 0 });
             }
             $("#RedditBoost_loadingAnimation").css("left", popupWidth / 2 - 100);
         };
         HoverPreviewPlugin.prototype._findMostSpace = function (mouseLocation) {
-            return Region.Right;
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+            console.log("window: " + windowWidth + ", " + windowHeight);
+            console.log("mouseLocation: " + this._mousePosition.x + ", " + this._mousePosition.y);
+            console.log("scrollT: " + $(window).scrollTop() + ", " + $(window).scrollLeft());
+            var distanceLeft = (mouseLocation.x - $(window).scrollLeft());
+            var distanceRight = windowWidth - (mouseLocation.x - $(window).scrollLeft());
+            var distanceAbove = (mouseLocation.y - $(window).scrollTop());
+            var distanceBelow = windowHeight - (mouseLocation.y - $(window).scrollTop());
+            console.log("distances: " + distanceLeft + ", " + distanceRight + ", " + distanceAbove + ", " + distanceBelow);
+            if (distanceLeft > distanceRight && distanceLeft > distanceAbove && distanceLeft > distanceBelow)
+                return Region.Left;
+            if (distanceRight > distanceLeft && distanceRight > distanceAbove && distanceRight > distanceBelow)
+                return Region.Right;
+            if (distanceAbove > distanceRight && distanceAbove > distanceLeft && distanceAbove > distanceBelow)
+                return Region.Above;
+            return Region.Below;
         };
         HoverPreviewPlugin.prototype._handleErrorLoading = function (event) {
             var failedLink = $(event.currentTarget).attr('src');

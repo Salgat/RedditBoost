@@ -244,14 +244,17 @@ module RedditBoostPlugin {
             // Note: There are 4 positions the popup can be relative to the mouse, either above, below, left, or right. 
             let region = this._findMostSpace(this._mousePosition);
             if (region == Region.Left) {
-                
+                // Display to the left of the mouse
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: 10});
             } else if (region == Region.Right) {
                 // Display to the right of the mouse
                 $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+10});
             } else if (region == Region.Above) {
-                
+                // Display above the mouse
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: 10});
             } else {
-                
+                // Display below the mouse
+                $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y+10, left: 0});
             }
             
             // Update loading animation position
@@ -262,7 +265,24 @@ module RedditBoostPlugin {
          * Returns either above, below, left, or right
          */
         private _findMostSpace(mouseLocation: {x: number, y: number}) : Region {
-            return Region.Right;
+            let windowWidth = $(window).width();
+			let windowHeight = $(window).height();
+            console.log("window: " + windowWidth + ", " + windowHeight);
+            console.log("mouseLocation: " + this._mousePosition.x + ", " + this._mousePosition.y);
+            console.log("scrollT: " + $(window).scrollTop() + ", " + $(window).scrollLeft());
+            
+            let distanceLeft = (mouseLocation.x - $(window).scrollLeft());
+            let distanceRight = windowWidth - (mouseLocation.x - $(window).scrollLeft());
+            let distanceAbove = (mouseLocation.y - $(window).scrollTop());
+            let distanceBelow = windowHeight - (mouseLocation.y - $(window).scrollTop());
+            
+            console.log("distances: " + distanceLeft + ", " + distanceRight + ", " + distanceAbove + ", " + distanceBelow);
+            
+            // Return largest region
+            if (distanceLeft > distanceRight && distanceLeft > distanceAbove && distanceLeft > distanceBelow) return Region.Left;
+            if (distanceRight > distanceLeft && distanceRight > distanceAbove && distanceRight > distanceBelow) return Region.Right;
+            if (distanceAbove > distanceRight && distanceAbove > distanceLeft && distanceAbove > distanceBelow) return Region.Above;
+            return Region.Below;
         }
         
         /**
