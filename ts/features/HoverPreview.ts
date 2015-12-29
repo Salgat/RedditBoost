@@ -214,14 +214,16 @@ module RedditBoostPlugin {
                 // Show loading animation
                 $("#RedditBoost_loadingAnimation").show();
                 
-                // Display IMG element
-                $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
-                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
+                // Display IMG element if current content is not correct
+                if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != linkType.link) {
+                    $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
+                    $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
                 
-                // Handle failed image loads
-                $('.RedditBoost_Content').bind('error', (event) => {
-                    this._handleErrorLoading(event);
-                });
+                    // Handle failed image load
+                    $('.RedditBoost_Content').bind('error', (event) => {
+                        this._handleErrorLoading(event);
+                    });
+                }
                 
                 $('#RedditBoost_imagePopup').show();
                 console.log("displaying link: " + linkType.link);
@@ -239,23 +241,30 @@ module RedditBoostPlugin {
             
             // Get popup sizes
             let popupWidth = $('#RedditBoost_imagePopup').width();
+            let popupHeight = $('#RedditBoost_imagePopup').height();
             
             // Adjust the popup size and position
             // Note: There are 4 positions the popup can be relative to the mouse, either above, below, left, or right. 
             let region = this._findMostSpace(this._mousePosition);
+            
+            // Adjust max width and heigh to fit within region
+            this._adjustPopupSize(popupWidth, popupHeight, region);
+            
             if (region == Region.Left) {
                 // Display to the left of the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: 10});
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x-popupWidth-10});
             } else if (region == Region.Right) {
                 // Display to the right of the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+10});
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+20});
             } else if (region == Region.Above) {
                 // Display above the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: 10});
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop()+this._mousePosition.x-popupHeight, left: 10});
             } else {
                 // Display below the mouse
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y+10, left: 0});
             }
+            
+            // Center the popup either vertically or horizontally
             
             // Update loading animation position
             $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
@@ -291,6 +300,32 @@ module RedditBoostPlugin {
         private _handleErrorLoading(event) : void {
             let failedLink = $(event.currentTarget).attr('src');
             this._failedLinks.push(failedLink);
+        }
+        
+        /**
+         * Adjusts max-width and max-height to fit within region.
+         */
+        private _adjustPopupSize(popupWidth: number, popupHeight: number, region: Region) : void {
+            let distanceLeft = (this._mousePosition.x - $(window).scrollLeft());
+            let distanceRight = $(window).width() - (this._mousePosition.x - $(window).scrollLeft());
+            let distanceAbove = (this._mousePosition.y - $(window).scrollTop());
+            let distanceBelow = $(window).height() - (this._mousePosition.y - $(window).scrollTop());
+            
+            // TODO: Need to compare the newly calculated max-width/max-height against the current one. If the difference is negligible (<1?),
+            //       don't update the ma-width/max-height.
+            if (region == Region.Left) {
+                $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
+                $('.RedditBoost_Content').css("max-width", distanceLeft - 30);
+            } else if (region == Region.Right) {
+                $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
+                $('.RedditBoost_Content').css("max-width", distanceRight - 30);
+            } else if (region == Region.Above) {
+                $('.RedditBoost_Content').css("max-height", distanceAbove - 90);
+                $('.RedditBoost_Content').css("max-width", $(window).width());
+            } else { // Region.Below
+                $('.RedditBoost_Content').css("max-height", distanceBelow - 90);
+                $('.RedditBoost_Content').css("max-width", $(window).width());
+            }
         }
     }
     
