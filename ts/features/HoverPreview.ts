@@ -6,8 +6,11 @@
  * Preview certain media links.
  */
 module RedditBoostPlugin {
+    enum Region {Above, Below, Left, Right};
+    
     class HoverPreviewPlugin extends utils.Singleton {
-        private _loadingAnimation: string = "<div id='loadingAnimation' class='uil-default-css' style='transform:scale(1);'>\
+        
+        private _loadingAnimation: string = "<div id='RedditBoost_loadingAnimation' class='uil-default-css' style='transform:scale(1);'>\
 								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
 								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(30deg) translate(0,-60px);transform:rotate(30deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
 								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(60deg) translate(0,-60px);transform:rotate(60deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
@@ -26,7 +29,10 @@ module RedditBoostPlugin {
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
         private _supportedDomains: RegExp;
+        private _staticImageType: RegExp;
         private _imageCache: {[fileName: string]: {source: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
+        private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
+        private _failedLinks: string[] = [];
         
         get init() { return this._init; }
         
@@ -34,14 +40,24 @@ module RedditBoostPlugin {
             this.setSingleton();
             
             // Setup Regex
-            this._supportedMediaPattern = new RegExp(".(gif|gifv|jpg|jpeg|png|bmp)$");
+            this._supportedMediaPattern = new RegExp("(gif|gifv|jpg|jpeg|png|bmp)$");
             this._supportedMediaPattern.ignoreCase = true;
             this._supportedDomains = new RegExp("(imgur.com|gfycat.com)$");
             this._supportedDomains.ignoreCase = true;
+            this._staticImageType = new RegExp("(jpg|jpeg|png|bmp)$");
+            this._staticImageType.ignoreCase = true;
             
             // Create preview window (hidden by default)
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
             $('#RedditBoost_imagePopup').hide();
+            $('#RedditBoost_imagePopup').prepend(this._loadingAnimation);
+            $("#RedditBoost_loadingAnimation").hide();
+            
+            // Update mouse position
+            $(document).mousemove((event) => {
+                this._mousePosition.x = event.pageX;
+                this._mousePosition.y = event.pageY;
+            });
             
             // Call preview logic at ~60Hz (note that the lambda style syntax is to preserve 'this' context)
             setInterval(() => {this._showPreview();}, 15);
@@ -187,14 +203,74 @@ module RedditBoostPlugin {
          * Displays the provided image.
          */
         private _displayImage(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
+            if (this._failedLinks.indexOf(linkType.link) >= 0) {
+                // The image has already failed to load before, so don't try to display it again
+                // TODO: Perhaps indicate the image failed to load?
+                $('#RedditBoost_imagePopup').hide();
+                return;
+            }
             
+            if (this._staticImageType.test(linkType.extension.toLowerCase())) {
+                // Show loading animation
+                $("#RedditBoost_loadingAnimation").show();
+                
+                // Display IMG element
+                $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
+                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
+                
+                // Handle failed image loads
+                $('.RedditBoost_Content').bind('error', (event) => {
+                    this._handleErrorLoading(event);
+                });
+                
+                $('#RedditBoost_imagePopup').show();
+                console.log("displaying link: " + linkType.link);
+            }
         }
         
         /**
          * Adjusts the popup screen and automatically removes the loading animation.
          */
         private _adjustPreviewPopup() {
+            if ($(".RedditBoost_Content").height()) {
+				// Once something starts loading, remove it
+				$("#RedditBoost_loadingAnimation").hide();
+			}
             
+            // Get popup sizes
+            let popupWidth = $('#RedditBoost_imagePopup').width();
+            
+            // Adjust the popup size and position
+            // Note: There are 4 positions the popup can be relative to the mouse, either above, below, left, or right. 
+            let region = this._findMostSpace(this._mousePosition);
+            if (region == Region.Left) {
+                
+            } else if (region == Region.Right) {
+                // Display to the right of the mouse
+                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+10});
+            } else if (region == Region.Above) {
+                
+            } else {
+                
+            }
+            
+            // Update loading animation position
+            $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
+        }
+        
+        /**
+         * Returns either above, below, left, or right
+         */
+        private _findMostSpace(mouseLocation: {x: number, y: number}) : Region {
+            return Region.Right;
+        }
+        
+        /**
+         * Handles when media failes to load.
+         */
+        private _handleErrorLoading(event) : void {
+            let failedLink = $(event.currentTarget).attr('src');
+            this._failedLinks.push(failedLink);
         }
     }
     

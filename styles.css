@@ -103,7 +103,7 @@
 	min-height: 220px;
 }
 
-#RedditBoost_imagePopup .targetImage {
+#RedditBoost_imagePopup .RedditBoost_Content {
 	padding: 5px;
 	display: block;
 	margin-left: auto;
@@ -234,7 +234,7 @@
 	animation-delay: 0.41666666666666663s;
 }
 
-#loadingAnimation {
+#RedditBoost_loadingAnimation {
 	position: absolute;
 	top: 30px;
 }
