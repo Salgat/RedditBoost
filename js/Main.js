@@ -562,8 +562,10 @@ var RedditBoostPlugin;
         HoverPreviewPlugin._getDomain = function (link) {
             link = link.replace(/.*?:\/\//g, "");
             link = link.split('/')[0];
-            if ((link.toLowerCase().match('/\./g') || []).length == 4 || ((link.toLowerCase().match('/\./g') || []).length == 3 && link.toLowerCase().indexOf('.co.') < 0)) {
-                link = link.split('.').shift().concat();
+            if (link.split('.').length == 4 || (link.split('.').length == 3 && link.toLowerCase().indexOf('.co.') < 0)) {
+                var split = link.split('.');
+                split.shift();
+                link = split.join('.');
             }
             return link;
         };
@@ -611,37 +613,38 @@ var RedditBoostPlugin;
             }
         };
         HoverPreviewPlugin.prototype._displayMedia = function (linkType, mediaInformation) {
-            var _this = this;
             if (this._failedLinks.indexOf(linkType.link) >= 0) {
                 $('#RedditBoost_imagePopup').hide();
                 return;
             }
             if (this._staticImageType.test(linkType.extension.toLowerCase())) {
-                $("#RedditBoost_loadingAnimation").show();
-                if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != linkType.link) {
-                    $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
-                    $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
-                    $('.RedditBoost_Content').bind('error', function (event) {
-                        _this._handleErrorLoading(event);
-                    });
-                }
-                $('#RedditBoost_imagePopup').show();
+                this._displayStaticImage(linkType.link);
             }
             else if (this._gifImageType.test(linkType.extension.toLowerCase())) {
                 if (false && mediaInformation != null && mediaInformation[linkType.fileName].mp4Url != null && mediaInformation[linkType.fileName].webmUrl != null) {
                 }
+                else if (mediaInformation != null && mediaInformation[linkType.fileName].gifUrl != null) {
+                    this._displayStaticImage(mediaInformation[linkType.fileName].gifUrl);
+                }
+                else if (mediaInformation != null && mediaInformation[linkType.fileName].imgUrl != null) {
+                    this._displayStaticImage(mediaInformation[linkType.fileName].imgUrl);
+                }
                 else {
-                    $("#RedditBoost_loadingAnimation").show();
-                    if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != linkType.link) {
-                        $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
-                        $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
-                        $('.RedditBoost_Content').bind('error', function (event) {
-                            _this._handleErrorLoading(event);
-                        });
-                    }
-                    $('#RedditBoost_imagePopup').show();
+                    this._displayStaticImage(linkType.link);
                 }
             }
+        };
+        HoverPreviewPlugin.prototype._displayStaticImage = function (link) {
+            var _this = this;
+            $("#RedditBoost_loadingAnimation").show();
+            if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != link) {
+                $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
+                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + link + "' id='imagePopupImg'>");
+                $('.RedditBoost_Content').bind('error', function (event) {
+                    _this._handleErrorLoading(event);
+                });
+            }
+            $('#RedditBoost_imagePopup').show();
         };
         HoverPreviewPlugin.prototype._adjustPreviewPopup = function () {
             if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
