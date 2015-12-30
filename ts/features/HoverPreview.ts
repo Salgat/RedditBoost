@@ -244,7 +244,7 @@ module RedditBoostPlugin {
          * Adjusts the popup screen and automatically removes the loading animation.
          */
         private _adjustPreviewPopup() {
-            if ($(".RedditBoost_Content").height()) {
+            if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
 				// Once something starts loading, remove it
 				$("#RedditBoost_loadingAnimation").hide();
 			}
@@ -363,7 +363,7 @@ module RedditBoostPlugin {
          */
         private _getMediaInformation(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
             // First display loading screen
-            $("#RedditBoost_Content").hide();
+            $(".RedditBoost_Content").hide();
             $("#RedditBoost_loadingAnimation").show();
             $('#RedditBoost_imagePopup').show();
             

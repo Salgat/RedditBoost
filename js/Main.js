@@ -624,7 +624,7 @@ var RedditBoostPlugin;
             }
         };
         HoverPreviewPlugin.prototype._adjustPreviewPopup = function () {
-            if ($(".RedditBoost_Content").height()) {
+            if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
                 $("#RedditBoost_loadingAnimation").hide();
             }
             var popupWidth = $('#RedditBoost_imagePopup').width();
@@ -701,7 +701,7 @@ var RedditBoostPlugin;
             $('#RedditBoost_imagePopup').css('top', $(window).height() / 2 - popupHeight / 2 + $(window).scrollTop());
         };
         HoverPreviewPlugin.prototype._getMediaInformation = function (linkType) {
-            $("#RedditBoost_Content").hide();
+            $(".RedditBoost_Content").hide();
             $("#RedditBoost_loadingAnimation").show();
             $('#RedditBoost_imagePopup').show();
             if (linkType.source == 'imgur.com') {
