@@ -25,6 +25,13 @@ module RedditBoostPlugin {
 								<div style='top:80px;left:93px;width:14px;height:40px;background:black;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>\
 							</div>";
                             
+        private _gifvPlayer: string = "<video data-filename='' class='RedditBoost_Content' preload='auto' autoplay='autoplay' muted='muted' loop='loop' webkit-playsinline>	    \
+                                <source src='' id='RedditBoost_imageWebm'	type='video/webm'>																		\
+                                <source src='' id='RedditBoost_imageMp4'	type='video/mp4'>																		\
+                                </video>																												";
+                                
+        private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
+                            
         private _lastLink: { lastLink: string, isActive: boolean, element: Element} = { lastLink: "", isActive: false, element: null};
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
@@ -56,10 +63,13 @@ module RedditBoostPlugin {
             this._gifImageType.ignoreCase = true;
             
             // Create preview window (hidden by default)
-            $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
+            $('body').append("<div id='RedditBoost_imagePopup'></div>");
             $('#RedditBoost_imagePopup').hide();
+            $('#RedditBoost_imagePopup').prepend(this._failedLoading);
+            $("#RedditBoost_failedLoading").hide();
             $('#RedditBoost_imagePopup').prepend(this._loadingAnimation);
             $("#RedditBoost_loadingAnimation").hide();
+            $('#RedditBoost_imagePopup').prepend("<h3 id='RedditBoost_imagePopupTitle'>");
             
             // Update mouse position
             $(document).mousemove((event) => {
@@ -198,20 +208,20 @@ module RedditBoostPlugin {
          */
         private _tryPreview(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
             // Determine whether the link is a supported media type or domain
-            if (this._isSupportedMediaPattern(linkType.extension)) {
-                // Can immediately display the preview
-                this._displayMedia(linkType);
-            } else if (this._imageCache[linkType.fileName] != null) {
+            if (this._imageCache[linkType.fileName] != null) {
                 // More information has already been received, either display the image or hide the preview popup
                 let mediaInformation = this._imageCache[linkType.fileName];
                 if (mediaInformation.imgUrl != null) {
                     let currentLinkType = this._getLinkType(mediaInformation.imgUrl);
                     if (this._isSupportedMediaPattern(currentLinkType.extension)) {
-                        this._displayMedia(currentLinkType);
+                        this._displayMedia(currentLinkType, this._imageCache);
                     }
                 } else {
                     $('#RedditBoost_imagePopup').hide();
                 }
+            } else if (this._isSupportedMediaPattern(linkType.extension)) {
+                // Can immediately display the preview
+                this._displayMedia(linkType, this._imageCache);
             } else if (this._isSupportedDomain(linkType.source, linkType.link)) {
                 // Need to request more information first, initially display loading screen
                 this._getMediaInformation(linkType);
@@ -225,21 +235,27 @@ module RedditBoostPlugin {
             if (this._failedLinks.indexOf(linkType.link) >= 0) {
                 // The image has already failed to load before, so don't try to display it again
                 // TODO: Perhaps indicate the image failed to load?
-                $('#RedditBoost_imagePopup').hide();
+                $('#RedditBoost_imagePopup').show();
+                $('.RedditBoost_Content').hide();
+                $('#RedditBoost_loadingAnimation').hide();
+                $('#RedditBoost_failedLoading').show();
                 return;
+            } else {
+                $('#RedditBoost_failedLoading').hide();
             }
             
             if (this._staticImageType.test(linkType.extension.toLowerCase())) {
-                this._displayStaticImage(linkType.link);
+                this._displayImage(linkType.link);
             } else if (this._gifImageType.test(linkType.extension.toLowerCase())) {
-                if (false && mediaInformation != null && mediaInformation[linkType.fileName].mp4Url != null && mediaInformation[linkType.fileName].webmUrl != null) {
-                    // First try to display the gifv version
-                } else if (mediaInformation != null && mediaInformation[linkType.fileName].gifUrl != null) {
-                    this._displayStaticImage(mediaInformation[linkType.fileName].gifUrl);
-                } else if (mediaInformation != null && mediaInformation[linkType.fileName].imgUrl != null) {
-                    this._displayStaticImage(mediaInformation[linkType.fileName].imgUrl);
+                let name = linkType.fileName.split('.')[0];
+                if (mediaInformation[name] != null && mediaInformation[name].mp4Url != null && mediaInformation[name].webmUrl != null) {
+                    this._displayGifv(name, mediaInformation[name]);
+                } else if (mediaInformation[name] != null && mediaInformation[name].gifUrl != null) {
+                    this._displayImage(mediaInformation[name].gifUrl);
+                } else if (mediaInformation[name] != null && mediaInformation[name].imgUrl != null) {
+                    this._displayImage(mediaInformation[name].imgUrl);
                 } else {
-                    this._displayStaticImage(linkType.link);
+                    this._displayImage(linkType.link);
                 }
             }
         }
@@ -247,7 +263,14 @@ module RedditBoostPlugin {
         /**
          * Displays img type given provided src.
          */
-        private _displayStaticImage(link: string) : void {
+        private _displayImage(link: string) : void {
+            if ((this._getExtension(link) == 'gif' || this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
+                // Imgur Gifs can be automatically played as gifv
+                let name = HoverPreviewPlugin._getFileName(link).split('.')[0];
+                this._displayGifv(name, {source: HoverPreviewPlugin._getDomain(link), imgUrl: null, mp4Url: "//i.imgur.com/" + name + ".mp4", webmUrl: "//i.imgur.com/" + name + ".webm", gifUrl: null});
+                return;
+            }
+            
             // Show loading animation
             $("#RedditBoost_loadingAnimation").show();
             
@@ -255,6 +278,36 @@ module RedditBoostPlugin {
             if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != link) {
                 $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
                 $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + link + "' id='imagePopupImg'>");
+            
+                // Handle failed image load
+                $('.RedditBoost_Content').bind('error', (event) => {
+                    this._handleErrorLoading(event);
+                });
+            }
+            
+            $('#RedditBoost_imagePopup').show();
+        }
+        
+        /**
+         * Displays gifv with the provided information.
+         */
+        private _displayGifv(fileName: string, mediaInformation: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}) : void {
+            // Show loading animation
+            $("#RedditBoost_loadingAnimation").show();
+            
+            // Display IMG element if current content is not correct
+            if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('data-fileName') != fileName) {
+                $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
+                $('#RedditBoost_imagePopup').append(this._gifvPlayer);
+                $('#RedditBoost_imagePopup .RedditBoost_Content').attr('data-fileName', fileName);
+                
+                if (mediaInformation.source == 'imgur.com') {
+                    $('#RedditBoost_imageWebm').attr("src", mediaInformation.webmUrl);
+				    $('#RedditBoost_imageMp4').attr("src", mediaInformation.mp4Url);
+                } else if (mediaInformation.source == 'gfycat.com') {
+                    $('#RedditBoost_imageWebm').attr("src", mediaInformation.webmUrl);
+				    $('#RedditBoost_imageMp4').attr("src", mediaInformation.mp4Url);
+                }
             
                 // Handle failed image load
                 $('.RedditBoost_Content').bind('error', (event) => {
@@ -276,7 +329,7 @@ module RedditBoostPlugin {
             
             // Display title text
             let title = $('a.title:hover, p a:hover').first().text();
-            if (title != null) {
+            if (title != null && $('#RedditBoost_imagePopupTitle').text() != title) {
                 $('#RedditBoost_imagePopupTitle').text(title);
             }
             

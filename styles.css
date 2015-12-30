@@ -238,3 +238,9 @@
 	position: absolute;
 	top: 30px;
 }
+
+#RedditBoost_failedLoading {
+    font-size: 175px;
+    color: red;
+    text-align: center;
+}
