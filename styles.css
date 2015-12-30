@@ -112,7 +112,7 @@
 
 #RedditBoost_imagePopup h3 {
 	text-align: center;
-	padding-bottom: 5px;
+    padding: 5px 5px 0 5px;
 }
 
 #disableCss {

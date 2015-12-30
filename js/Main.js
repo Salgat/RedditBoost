@@ -509,6 +509,8 @@ var RedditBoostPlugin;
             this._supportedDomains.ignoreCase = true;
             this._staticImageType = new RegExp("(jpg|jpeg|png|bmp)$");
             this._staticImageType.ignoreCase = true;
+            this._gifImageType = new RegExp("(gif|gifv)$");
+            this._gifImageType.ignoreCase = true;
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
             $('#RedditBoost_imagePopup').hide();
             $('#RedditBoost_imagePopup').prepend(this._loadingAnimation);
@@ -590,12 +592,15 @@ var RedditBoostPlugin;
         };
         HoverPreviewPlugin.prototype._tryPreview = function (linkType) {
             if (this._isSupportedMediaPattern(linkType.extension)) {
-                this._displayImage(linkType);
+                this._displayMedia(linkType);
             }
             else if (this._imageCache[linkType.fileName] != null) {
                 var mediaInformation = this._imageCache[linkType.fileName];
                 if (mediaInformation.imgUrl != null) {
-                    this._displayImage(this._getLinkType(mediaInformation.imgUrl));
+                    var currentLinkType = this._getLinkType(mediaInformation.imgUrl);
+                    if (this._isSupportedMediaPattern(currentLinkType.extension)) {
+                        this._displayMedia(currentLinkType);
+                    }
                 }
                 else {
                     $('#RedditBoost_imagePopup').hide();
@@ -605,7 +610,7 @@ var RedditBoostPlugin;
                 this._getMediaInformation(linkType);
             }
         };
-        HoverPreviewPlugin.prototype._displayImage = function (linkType) {
+        HoverPreviewPlugin.prototype._displayMedia = function (linkType, mediaInformation) {
             var _this = this;
             if (this._failedLinks.indexOf(linkType.link) >= 0) {
                 $('#RedditBoost_imagePopup').hide();
@@ -622,10 +627,29 @@ var RedditBoostPlugin;
                 }
                 $('#RedditBoost_imagePopup').show();
             }
+            else if (this._gifImageType.test(linkType.extension.toLowerCase())) {
+                if (false && mediaInformation != null && mediaInformation[linkType.fileName].mp4Url != null && mediaInformation[linkType.fileName].webmUrl != null) {
+                }
+                else {
+                    $("#RedditBoost_loadingAnimation").show();
+                    if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != linkType.link) {
+                        $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
+                        $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
+                        $('.RedditBoost_Content').bind('error', function (event) {
+                            _this._handleErrorLoading(event);
+                        });
+                    }
+                    $('#RedditBoost_imagePopup').show();
+                }
+            }
         };
         HoverPreviewPlugin.prototype._adjustPreviewPopup = function () {
             if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
                 $("#RedditBoost_loadingAnimation").hide();
+            }
+            var title = $('a.title:hover, p a:hover').first().text();
+            if (title != null) {
+                $('#RedditBoost_imagePopupTitle').text(title);
             }
             var popupWidth = $('#RedditBoost_imagePopup').width();
             var popupHeight = $('#RedditBoost_imagePopup').height();

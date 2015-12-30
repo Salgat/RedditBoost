@@ -30,6 +30,7 @@ module RedditBoostPlugin {
         private _supportedMediaPattern: RegExp;
         private _supportedDomains: RegExp;
         private _staticImageType: RegExp;
+        private _gifImageType: RegExp;
         private _imageCache: {[fileName: string]: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
         private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _failedLinks: string[] = [];
@@ -51,6 +52,8 @@ module RedditBoostPlugin {
             this._supportedDomains.ignoreCase = true;
             this._staticImageType = new RegExp("(jpg|jpeg|png|bmp)$");
             this._staticImageType.ignoreCase = true;
+            this._gifImageType = new RegExp("(gif|gifv)$");
+            this._gifImageType.ignoreCase = true;
             
             // Create preview window (hidden by default)
             $('body').append("<div id='RedditBoost_imagePopup'><h3 id='RedditBoost_imagePopupTitle'></div>");
@@ -195,12 +198,15 @@ module RedditBoostPlugin {
             // Determine whether the link is a supported media type or domain
             if (this._isSupportedMediaPattern(linkType.extension)) {
                 // Can immediately display the preview
-                this._displayImage(linkType);
+                this._displayMedia(linkType);
             } else if (this._imageCache[linkType.fileName] != null) {
                 // More information has already been received, either display the image or hide the preview popup
                 let mediaInformation = this._imageCache[linkType.fileName];
                 if (mediaInformation.imgUrl != null) {
-                    this._displayImage(this._getLinkType(mediaInformation.imgUrl));
+                    let currentLinkType = this._getLinkType(mediaInformation.imgUrl);
+                    if (this._isSupportedMediaPattern(currentLinkType.extension)) {
+                        this._displayMedia(currentLinkType);
+                    }
                 } else {
                     $('#RedditBoost_imagePopup').hide();
                 }
@@ -213,7 +219,7 @@ module RedditBoostPlugin {
         /**
          * Displays the provided image.
          */
-        private _displayImage(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
+        private _displayMedia(linkType: {link: string, extension: string, source: string, fileName: string}, mediaInformation?: {[fileName: string]: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}}) : void {
             if (this._failedLinks.indexOf(linkType.link) >= 0) {
                 // The image has already failed to load before, so don't try to display it again
                 // TODO: Perhaps indicate the image failed to load?
@@ -237,6 +243,26 @@ module RedditBoostPlugin {
                 }
                 
                 $('#RedditBoost_imagePopup').show();
+            } else if (this._gifImageType.test(linkType.extension.toLowerCase())) {
+                if (false && mediaInformation != null && mediaInformation[linkType.fileName].mp4Url != null && mediaInformation[linkType.fileName].webmUrl != null) {
+                    // First try to display the gifv version
+                } else {
+                    // Show loading animation
+                    $("#RedditBoost_loadingAnimation").show();
+                    
+                    // Display IMG element if current content is not correct
+                    if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != linkType.link) {
+                        $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
+                        $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + linkType.link + "' id='imagePopupImg'>");
+                    
+                        // Handle failed image load
+                        $('.RedditBoost_Content').bind('error', (event) => {
+                            this._handleErrorLoading(event);
+                        });
+                    }
+                    
+                    $('#RedditBoost_imagePopup').show();
+                }
             }
         }
         
@@ -248,6 +274,12 @@ module RedditBoostPlugin {
 				// Once something starts loading, remove it
 				$("#RedditBoost_loadingAnimation").hide();
 			}
+            
+            // Display title text
+            let title = $('a.title:hover, p a:hover').first().text();
+            if (title != null) {
+                $('#RedditBoost_imagePopupTitle').text(title);
+            }
             
             // Get popup sizes
             let popupWidth = $('#RedditBoost_imagePopup').width();
