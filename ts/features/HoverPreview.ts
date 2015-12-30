@@ -30,14 +30,19 @@ module RedditBoostPlugin {
         private _supportedMediaPattern: RegExp;
         private _supportedDomains: RegExp;
         private _staticImageType: RegExp;
-        private _imageCache: {[fileName: string]: {source: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
+        private _imageCache: {[fileName: string]: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
         private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _failedLinks: string[] = [];
+        private _requestedLinks: string[] = [];
         
         get init() { return this._init; }
         
         private _init(): void {
             this.setSingleton();
+            
+            // Setup event listeners
+            this._handleImgurResponse();
+            this._handleGfycatResponse();
             
             // Setup Regex
             this._supportedMediaPattern = new RegExp("(gif|gifv|jpg|jpeg|png|bmp)$");
@@ -75,7 +80,7 @@ module RedditBoostPlugin {
             let hoveredLink = $('a.title:hover, p a:hover').first();
             if (hoveredLink.length > 0) {
                 // Get link type and attempt to display if a supported media format
-                let linkType =  this._getLinkType(hoveredLink);
+                let linkType =  this._getLinkType($(hoveredLink).attr("href"));
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
                     this._tryPreview(linkType);
@@ -94,8 +99,8 @@ module RedditBoostPlugin {
         /**
          * Returns what link's media type and other information.
          */
-        private _getLinkType(linkElement: JQuery) : {link: string, extension: string, source: string, fileName: string} {
-            let link: string = $(linkElement).attr("href");
+        private _getLinkType(linkHref: string) : {link: string, extension: string, source: string, fileName: string} {
+            let link: string = linkHref;
             let fileName: string = HoverPreviewPlugin._getFileName(link);
             let extension: string = this._getExtension(fileName);
             let source: string = HoverPreviewPlugin._getDomain(link);
@@ -193,9 +198,15 @@ module RedditBoostPlugin {
                 this._displayImage(linkType);
             } else if (this._imageCache[linkType.fileName] != null) {
                 // More information has already been received, either display the image or hide the preview popup
-                
+                let mediaInformation = this._imageCache[linkType.fileName];
+                if (mediaInformation.imgUrl != null) {
+                    this._displayImage(this._getLinkType(mediaInformation.imgUrl));
+                } else {
+                    $('#RedditBoost_imagePopup').hide();
+                }
             } else if (this._isSupportedDomain(linkType.source, linkType.link)) {
-                // Need to request more information first, initially display loading screen   
+                // Need to request more information first, initially display loading screen
+                this._getMediaInformation(linkType);
             }
         }
         
@@ -226,7 +237,6 @@ module RedditBoostPlugin {
                 }
                 
                 $('#RedditBoost_imagePopup').show();
-                console.log("displaying link: " + linkType.link);
             }
         }
         
@@ -283,16 +293,11 @@ module RedditBoostPlugin {
         private _findMostSpace(mouseLocation: {x: number, y: number}) : Region {
             let windowWidth = $(window).width();
 			let windowHeight = $(window).height();
-            console.log("window: " + windowWidth + ", " + windowHeight);
-            console.log("mouseLocation: " + this._mousePosition.x + ", " + this._mousePosition.y);
-            console.log("scrollT: " + $(window).scrollTop() + ", " + $(window).scrollLeft());
             
             let distanceLeft = (mouseLocation.x - $(window).scrollLeft());
             let distanceRight = windowWidth - (mouseLocation.x - $(window).scrollLeft());
             let distanceAbove = (mouseLocation.y - $(window).scrollTop());
             let distanceBelow = windowHeight - (mouseLocation.y - $(window).scrollTop());
-            
-            console.log("distances: " + distanceLeft + ", " + distanceRight + ", " + distanceAbove + ", " + distanceBelow);
             
             // Return largest region
             if (distanceLeft > distanceRight && distanceLeft > distanceAbove && distanceLeft > distanceBelow) return Region.Left;
@@ -337,6 +342,8 @@ module RedditBoostPlugin {
         
         /**
          * Centers preview popup horizontally
+         * 
+         * Todo: May want to have this center on the mouse
          */
         private _centerPopupHorizontally(popupWidth: number) : void {
             var offset = $("#layer2").offset();
@@ -350,6 +357,75 @@ module RedditBoostPlugin {
             var offset = $("#layer2").offset();
             $('#RedditBoost_imagePopup').css('top', $(window).height()/2 - popupHeight/2 + $(window).scrollTop());
         }
+        
+        /**
+         * Asynchronously requests information regarding the link.
+         */
+        private _getMediaInformation(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
+            // First display loading screen
+            $("#RedditBoost_Content").hide();
+            $("#RedditBoost_loadingAnimation").show();
+            $('#RedditBoost_imagePopup').show();
+            
+            if (linkType.source == 'imgur.com') {
+                this._getImgurData(linkType.fileName);
+            } else if (linkType.source == 'gfycat.com') {
+                this._getGfycatData(linkType.fileName);
+            }
+        }
+        
+        /**
+         * Updates the image cache and raises an event notifying that it finished.
+         */
+        private _getImgurData(fileName: string) : void {
+            if (this._requestedLinks.indexOf(fileName) >= 0) return;
+            this._requestedLinks.push(fileName);
+            
+            let imageApiUrl = "//api.imgur.com/2/image/" + fileName + ".json";
+            $.get(imageApiUrl)
+            .done((data) => {
+                window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedImgurData", { "detail": data }));
+            });
+        }
+        private _getGfycatData(fileName: string) : void {
+            if (this._requestedLinks.indexOf(fileName) >= 0) return;
+            this._requestedLinks.push(fileName);
+            
+            let imageApiUrl = "//gfycat.com/cajax/get/" + fileName;
+            $.get(imageApiUrl)
+            .done((data) => {
+                window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedGfycatData", { "detail": data }));
+            });
+        }
+        
+        /**
+         * Handle media GET responses.
+         */
+        private _handleImgurResponse() {
+            window.addEventListener("RedditBoost_RetrievedImgurData", (event: any) => {
+                let hash = event.detail["image"]["image"]["hash"];
+                let imageUrl = event.detail["image"]["links"]["original"];
+                if (imageUrl != null) {
+                    this._imageCache[hash] = {source: 'imgur.com', imgUrl: imageUrl, mp4Url: null, gifUrl: null, webmUrl: null};
+                } else {
+                    this._imageCache[hash] = {source: 'imgur.com', imgUrl: null, mp4Url: null, gifUrl: null, webmUrl: null};
+                }
+            }, false);
+        }
+        private _handleGfycatResponse() {
+            window.addEventListener("RedditBoost_RetrievedGfycatData", (event: any) => {
+                var hash = event.detail["gfyItem"]["gfyName"];
+                var imageUrl = event.detail["gfyItem"]["gifUrl"];
+                var webmUrl = event.detail["gfyItem"]["webmUrl"];
+                var mp4Url = event.detail["gfyItem"]["mp4Url"];
+                if (imageUrl != null) {
+                    this._imageCache[hash] = {source: 'gfycat.com', imgUrl: imageUrl, mp4Url: mp4Url, gifUrl: null, webmUrl: webmUrl};
+                } else {
+                    this._imageCache[hash] = {source: 'gfycat.com', imgUrl: null, mp4Url: null, gifUrl: null, webmUrl: null};
+                }
+            }, false);
+        }
+        
     }
     
     export var HoverPreview: HoverPreviewPlugin = new HoverPreviewPlugin();
