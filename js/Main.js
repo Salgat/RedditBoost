@@ -628,10 +628,16 @@ var RedditBoostPlugin;
                 $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x + 20 });
             }
             else if (region == Region.Above) {
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop() + this._mousePosition.x - popupHeight, left: 10 });
+                $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y - popupHeight - 5, left: 10 });
             }
             else {
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y + 10, left: 0 });
+            }
+            if (region == Region.Above || region == Region.Below) {
+                this._centerPopupHorizontally(popupWidth);
+            }
+            else {
+                this._centerPopupVertically(popupHeight);
             }
             $("#RedditBoost_loadingAnimation").css("left", popupWidth / 2 - 100);
         };
@@ -673,12 +679,20 @@ var RedditBoostPlugin;
             }
             else if (region == Region.Above) {
                 $('.RedditBoost_Content').css("max-height", distanceAbove - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width());
+                $('.RedditBoost_Content').css("max-width", $(window).width() - 15);
             }
             else {
                 $('.RedditBoost_Content').css("max-height", distanceBelow - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width());
+                $('.RedditBoost_Content').css("max-width", $(window).width() - 15);
             }
+        };
+        HoverPreviewPlugin.prototype._centerPopupHorizontally = function (popupWidth) {
+            var offset = $("#layer2").offset();
+            $('#RedditBoost_imagePopup').css('left', $(window).width() / 2 - popupWidth / 2 + $(window).scrollLeft());
+        };
+        HoverPreviewPlugin.prototype._centerPopupVertically = function (popupHeight) {
+            var offset = $("#layer2").offset();
+            $('#RedditBoost_imagePopup').css('top', $(window).height() / 2 - popupHeight / 2 + $(window).scrollTop());
         };
         return HoverPreviewPlugin;
     })(utils.Singleton);

@@ -258,13 +258,20 @@ module RedditBoostPlugin {
                 $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+20});
             } else if (region == Region.Above) {
                 // Display above the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop()+this._mousePosition.x-popupHeight, left: 10});
+                $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y-popupHeight-5, left: 10});
             } else {
                 // Display below the mouse
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y+10, left: 0});
-            }
+            } // TODO: Fix above and below popup offset
             
             // Center the popup either vertically or horizontally
+            if (region == Region.Above || region == Region.Below) {
+                // Center horizontally
+                this._centerPopupHorizontally(popupWidth);
+            } else {
+                // Center vertically
+                this._centerPopupVertically(popupHeight);
+            }
             
             // Update loading animation position
             $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
@@ -312,7 +319,7 @@ module RedditBoostPlugin {
             let distanceBelow = $(window).height() - (this._mousePosition.y - $(window).scrollTop());
             
             // TODO: Need to compare the newly calculated max-width/max-height against the current one. If the difference is negligible (<1?),
-            //       don't update the ma-width/max-height.
+            //       don't update the ma-width/max-height. This will prevent the shaking that sometimes occurs.
             if (region == Region.Left) {
                 $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
                 $('.RedditBoost_Content').css("max-width", distanceLeft - 30);
@@ -321,11 +328,27 @@ module RedditBoostPlugin {
                 $('.RedditBoost_Content').css("max-width", distanceRight - 30);
             } else if (region == Region.Above) {
                 $('.RedditBoost_Content').css("max-height", distanceAbove - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width());
+                $('.RedditBoost_Content').css("max-width", $(window).width()-15);
             } else { // Region.Below
                 $('.RedditBoost_Content').css("max-height", distanceBelow - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width());
+                $('.RedditBoost_Content').css("max-width", $(window).width()-15);
             }
+        }
+        
+        /**
+         * Centers preview popup horizontally
+         */
+        private _centerPopupHorizontally(popupWidth: number) : void {
+            var offset = $("#layer2").offset();
+            $('#RedditBoost_imagePopup').css('left', $(window).width()/2 - popupWidth/2 + $(window).scrollLeft());
+        }
+        
+        /**
+         * Centers preview popup vertically
+         */
+        private _centerPopupVertically(popupHeight: number) : void {
+            var offset = $("#layer2").offset();
+            $('#RedditBoost_imagePopup').css('top', $(window).height()/2 - popupHeight/2 + $(window).scrollTop());
         }
     }
     
