@@ -27,7 +27,7 @@ module RedditBoostPlugin {
                             
         private _gifvPlayer: string = "<video data-filename='' class='RedditBoost_Content' preload='auto' autoplay='autoplay' muted='muted' loop='loop' webkit-playsinline>	    \
                                 <source src='' id='RedditBoost_imageWebm'	type='video/webm'>																		\
-                                <source src='' id='RedditBoost_imageMp4'	type='video/mp4' onerror='fallback(parentNode)'>																		\
+                                <source src='' id='RedditBoost_imageMp4'	type='video/mp4'>																		\
                                 </video>																												";
                                 
         private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
