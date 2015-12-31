@@ -93,7 +93,7 @@
 	border-radius: 3px;
 }
 
-#imagePopup {
+#RedditBoost_imagePopup {
 	position: absolute;
 	border-radius: 5px;
 	border: 1px solid #e3e3e3;
@@ -103,16 +103,16 @@
 	min-height: 220px;
 }
 
-#imagePopup .targetImage {
+#RedditBoost_imagePopup .RedditBoost_Content {
 	padding: 5px;
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
 }
 
-#imagePopup h3 {
+#RedditBoost_imagePopup h3 {
 	text-align: center;
-	padding-bottom: 5px;
+    padding: 5px 5px 0 5px;
 }
 
 #disableCss {
@@ -234,7 +234,17 @@
 	animation-delay: 0.41666666666666663s;
 }
 
-#loadingAnimation {
+#RedditBoost_loadingAnimation {
 	position: absolute;
 	top: 30px;
+}
+
+#RedditBoost_failedLoading {
+    font-size: 175px;
+    color: red;
+    text-align: center;
+}
+
+.RedditBoost_getMirror:hover {
+    text-decoration: underline;
 }
