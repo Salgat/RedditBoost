@@ -601,8 +601,8 @@ var RedditBoostPlugin;
             return false;
         };
         HoverPreviewPlugin.prototype._tryPreview = function (linkType) {
-            if (this._imageCache[linkType.fileName] != null) {
-                var mediaInformation = this._imageCache[linkType.fileName];
+            if (this._imageCache[linkType.fileName.toLowerCase()] != null) {
+                var mediaInformation = this._imageCache[linkType.fileName.toLowerCase()];
                 if (mediaInformation.imgUrl != null) {
                     var currentLinkType = this._getLinkType(mediaInformation.imgUrl);
                     if (this._isSupportedMediaPattern(currentLinkType.extension)) {
@@ -635,7 +635,7 @@ var RedditBoostPlugin;
                 this._displayImage(linkType.link);
             }
             else if (this._gifImageType.test(linkType.extension.toLowerCase())) {
-                var name_1 = linkType.fileName.split('.')[0];
+                var name_1 = linkType.fileName.split('.')[0].toLowerCase();
                 if (mediaInformation[name_1] != null && mediaInformation[name_1].mp4Url != null && mediaInformation[name_1].webmUrl != null) {
                     this._displayGifv(name_1, mediaInformation[name_1]);
                 }
@@ -803,7 +803,7 @@ var RedditBoostPlugin;
         HoverPreviewPlugin.prototype._handleImgurResponse = function () {
             var _this = this;
             window.addEventListener("RedditBoost_RetrievedImgurData", function (event) {
-                var hash = event.detail["image"]["image"]["hash"];
+                var hash = event.detail["image"]["image"]["hash"].toLowerCase();
                 var imageUrl = event.detail["image"]["links"]["original"];
                 if (imageUrl != null) {
                     _this._imageCache[hash] = { source: 'imgur.com', imgUrl: imageUrl, mp4Url: null, gifUrl: null, webmUrl: null };
@@ -816,7 +816,7 @@ var RedditBoostPlugin;
         HoverPreviewPlugin.prototype._handleGfycatResponse = function () {
             var _this = this;
             window.addEventListener("RedditBoost_RetrievedGfycatData", function (event) {
-                var hash = event.detail["gfyItem"]["gfyName"];
+                var hash = event.detail["gfyItem"]["gfyName"].toLowerCase();
                 var imageUrl = event.detail["gfyItem"]["gifUrl"];
                 var webmUrl = event.detail["gfyItem"]["webmUrl"];
                 var mp4Url = event.detail["gfyItem"]["mp4Url"];

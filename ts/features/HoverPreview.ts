@@ -208,9 +208,9 @@ module RedditBoostPlugin {
          */
         private _tryPreview(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
             // Determine whether the link is a supported media type or domain
-            if (this._imageCache[linkType.fileName] != null) {
+            if (this._imageCache[linkType.fileName.toLowerCase()] != null) {
                 // More information has already been received, either display the image or hide the preview popup
-                let mediaInformation = this._imageCache[linkType.fileName];
+                let mediaInformation = this._imageCache[linkType.fileName.toLowerCase()];
                 if (mediaInformation.imgUrl != null) {
                     let currentLinkType = this._getLinkType(mediaInformation.imgUrl);
                     if (this._isSupportedMediaPattern(currentLinkType.extension)) {
@@ -247,7 +247,7 @@ module RedditBoostPlugin {
             if (this._staticImageType.test(linkType.extension.toLowerCase())) {
                 this._displayImage(linkType.link);
             } else if (this._gifImageType.test(linkType.extension.toLowerCase())) {
-                let name = linkType.fileName.split('.')[0];
+                let name = linkType.fileName.split('.')[0].toLowerCase();
                 if (mediaInformation[name] != null && mediaInformation[name].mp4Url != null && mediaInformation[name].webmUrl != null) {
                     this._displayGifv(name, mediaInformation[name]);
                 } else if (mediaInformation[name] != null && mediaInformation[name].gifUrl != null) {
@@ -487,7 +487,7 @@ module RedditBoostPlugin {
          */
         private _handleImgurResponse() {
             window.addEventListener("RedditBoost_RetrievedImgurData", (event: any) => {
-                let hash = event.detail["image"]["image"]["hash"];
+                let hash = event.detail["image"]["image"]["hash"].toLowerCase();
                 let imageUrl = event.detail["image"]["links"]["original"];
                 if (imageUrl != null) {
                     this._imageCache[hash] = {source: 'imgur.com', imgUrl: imageUrl, mp4Url: null, gifUrl: null, webmUrl: null};
@@ -498,7 +498,7 @@ module RedditBoostPlugin {
         }
         private _handleGfycatResponse() {
             window.addEventListener("RedditBoost_RetrievedGfycatData", (event: any) => {
-                var hash = event.detail["gfyItem"]["gfyName"];
+                var hash = event.detail["gfyItem"]["gfyName"].toLowerCase();
                 var imageUrl = event.detail["gfyItem"]["gifUrl"];
                 var webmUrl = event.detail["gfyItem"]["webmUrl"];
                 var mp4Url = event.detail["gfyItem"]["mp4Url"];
