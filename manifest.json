@@ -13,5 +13,5 @@
     }
   ],
   "manifest_version": 2,
-  "web_accessible_resources": ["script.js", "/plugins/jquery.initialize/jquery.initialize.js"]
+  "web_accessible_resources": ["/js/Main.js", "/plugins/jquery.initialize/jquery.initialize.js"]
 }
