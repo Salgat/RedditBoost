@@ -535,7 +535,7 @@ var RedditBoostPlugin;
             if (this._processing)
                 return;
             this._processing = true;
-            var hoveredLink = $('a.title:hover, p a:hover').first();
+            var hoveredLink = $('a.title:hover, form a:hover').first();
             if (hoveredLink.length > 0) {
                 var linkType = this._getLinkType($(hoveredLink).attr("href"));
                 if (this._isSupported(linkType)) {
@@ -702,7 +702,7 @@ var RedditBoostPlugin;
             }
             this._lastMousePosition.x = this._mousePosition.x;
             this._lastMousePosition.y = this._mousePosition.y;
-            var title = $('a.title:hover, p a:hover').first().text();
+            var title = $('a.title:hover, form a:hover').first().text();
             if (title != null && $('#RedditBoost_imagePopupTitle').text() != title) {
                 $('#RedditBoost_imagePopupTitle').text(title);
                 this._imageUpdates = 0;

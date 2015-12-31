@@ -27,7 +27,7 @@ module RedditBoostPlugin {
                             
         private _gifvPlayer: string = "<video data-filename='' class='RedditBoost_Content' preload='auto' autoplay='autoplay' muted='muted' loop='loop' webkit-playsinline>	    \
                                 <source src='' id='RedditBoost_imageWebm'	type='video/webm'>																		\
-                                <source src='' id='RedditBoost_imageMp4'	type='video/mp4'>																		\
+                                <source src='' id='RedditBoost_imageMp4'	type='video/mp4' onerror='fallback(parentNode)'>																		\
                                 </video>																												";
                                 
         private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
@@ -92,7 +92,7 @@ module RedditBoostPlugin {
             this._processing = true;
             
             // Check if mouse is hovering over a link
-            let hoveredLink = $('a.title:hover, p a:hover').first();
+            let hoveredLink = $('a.title:hover, form a:hover').first();
             if (hoveredLink.length > 0) {
                 // Get link type and attempt to display if a supported media format
                 let linkType =  this._getLinkType($(hoveredLink).attr("href"));
@@ -326,6 +326,7 @@ module RedditBoostPlugin {
         private _adjustPreviewPopup() {
             if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
 				// Once something starts loading, remove it
+                // TODO: This is not detecting when a gifv loads
 				$("#RedditBoost_loadingAnimation").hide();
 			} else {
                 // Dont' start tracking image updates until after the image has loaded
@@ -340,7 +341,7 @@ module RedditBoostPlugin {
             this._lastMousePosition.y = this._mousePosition.y;
             
             // Display title text
-            let title = $('a.title:hover, p a:hover').first().text();
+            let title = $('a.title:hover, form a:hover').first().text();
             if (title != null && $('#RedditBoost_imagePopupTitle').text() != title) {
                 $('#RedditBoost_imagePopupTitle').text(title);
                 this._imageUpdates = 0;
