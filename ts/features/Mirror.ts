@@ -33,7 +33,7 @@ module RedditBoostPlugin {
         /**
          * Makes an GET request to retrieve the mirror link.
          */
-        private _getMirror(element: EventTarget) {
+        private _getMirror(element: EventTarget) : void {
             let link = $(element).attr('data-mirror-link');
             
             // Remove protocol
@@ -42,11 +42,38 @@ module RedditBoostPlugin {
             // Indicate that we are retrieving the mirror
             $(element).text('loading mirror...');
             
-            //$.get('http://redditmirror.salgat.net/redditmirror/v1/mirror?url=' + link)
-            $.get('http://127.0.0.1:5000/redditmirror/v1/mirror?url=' + link)
+            $.get('https://redditmirror.herokuapp.com/redditmirror/v1/mirror?url=' + link)
             .done((data) => {
-                window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedMirror", { "detail": data }));
+                this._loadMirror(element, data);
+            })
+            .fail(() => {
+                this._loadMirrorFailed(element);
             });
+        }
+        
+        /**
+         * Loads the mirror in a new window.
+         */
+        private _loadMirror(element: EventTarget, data: any) : void {
+            $(element).text('mirror loaded').css('background-color', '#76ad4c');
+            
+            this._openInNewTab(data['url']);
+        }
+        
+        /**
+         * Indicates that the mirror load failed.
+         */
+        private _loadMirrorFailed(element: EventTarget) : void {
+            $(element).text('no mirror').css('background-color', '#ff5252');
+        }
+        
+        /**
+         * Opens a link in a new tab.
+         * 
+         * Source: http://stackoverflow.com/questions/4907843/open-a-url-in-a-new-tab-and-not-a-new-window-using-javascript
+         */
+        private _openInNewTab(url) {
+            $("<a>").attr("href", url).attr("target", "_blank")[0].click();
         }
     }
     

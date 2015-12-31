@@ -858,13 +858,27 @@ var RedditBoostPlugin;
             });
         };
         MirrorPlugin.prototype._getMirror = function (element) {
+            var _this = this;
             var link = $(element).attr('data-mirror-link');
             link = link.replace(/.*?:\/\//g, "");
             $(element).text('loading mirror...');
-            $.get('http://127.0.0.1:5000/redditmirror/v1/mirror?url=' + link)
+            $.get('https://redditmirror.herokuapp.com/redditmirror/v1/mirror?url=' + link)
                 .done(function (data) {
-                window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedMirror", { "detail": data }));
+                _this._loadMirror(element, data);
+            })
+                .fail(function () {
+                _this._loadMirrorFailed(element);
             });
+        };
+        MirrorPlugin.prototype._loadMirror = function (element, data) {
+            $(element).text('mirror loaded').css('background-color', '#76ad4c');
+            this._openInNewTab(data['url']);
+        };
+        MirrorPlugin.prototype._loadMirrorFailed = function (element) {
+            $(element).text('no mirror').css('background-color', '#ff5252');
+        };
+        MirrorPlugin.prototype._openInNewTab = function (url) {
+            $("<a>").attr("href", url).attr("target", "_blank")[0].click();
         };
         return MirrorPlugin;
     })(utils.Singleton);
