@@ -10,15 +10,26 @@ As of now RedditBoost only works with Chrome. To setup, complete the following i
 4. Select the folder of the RedditBoost repo and press OK
 5. To disable, either uncheck the "Enabled" checkbox or click the trash can to permanently remove it
 
-## Goals
-RedditBoost is intended to be a lightweight and mostly seamless version of RES for a small set of features. Below are some of the intended features to be added.
+## Features
+RedditBoost is intended to be a lightweight and mostly seamless version of RES for a small set of features. Below are some of the features added.
 
-- Tagging users - Completed
-- Hover over image links to preview them - Completed
-- Block all selected user's submissions - Completed
-- Hide all selected user's comments - Completed
-- Disable Subreddit CSS - Completed
-- After reaching a stable version, adding support for Firefox (and possibly Safari)
+![](https://github.com/Salgat/BubbleGrow/blob/master/doc/usertag.png)
+- Tagging users
+
+![](https://github.com/Salgat/BubbleGrow/blob/master/doc/hoverpreview.png)
+- Hover over image links to preview them
+
+![](https://github.com/Salgat/BubbleGrow/blob/master/doc/usersubmissionblock.png)
+- Block all selected user's submissions
+
+![](https://github.com/Salgat/BubbleGrow/blob/master/doc/usercommentblock.png)
+- Hide all selected user's comments
+
+![](https://github.com/Salgat/BubbleGrow/blob/master/doc/cssblock.png)
+- Disable Subreddit CSS
+
+![](https://github.com/Salgat/BubbleGrow/blob/master/doc/mirror.png)
+- Link mirrors
 
 ## Feedback and contributions
 This project uses Gitflow so a feature branch and pull request to the develop branch are necessary if you want your feature pulled in. Additionally, this project follows a simplistic and clean commit style of the format "Action Very Short Summary" with a more thorough description following the commit title. Actions allowed are "Add, Remove, Update, Refactor, and Fix" all in the present tense. Any failure to follow this format will result in the pull request being rejected.
