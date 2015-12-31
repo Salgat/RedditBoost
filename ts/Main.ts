@@ -12,6 +12,7 @@ Ideas:
 /// <reference path='features/BanUserSubmissions.ts'/>
 /// <reference path='features/BanCustomCss.ts'/>
 /// <reference path='features/HoverPreview.ts'/>
+/// <reference path='features/Mirror.ts'/>
 
 namespace RedditBoost {
     $(document).ready(function() {
@@ -21,5 +22,6 @@ namespace RedditBoost {
         RedditBoostPlugin.BanUserSubmissions.init();
         RedditBoostPlugin.BanCustomCss.init();
         RedditBoostPlugin.HoverPreview.init();
+        RedditBoostPlugin.Mirror.init();
     });
 }

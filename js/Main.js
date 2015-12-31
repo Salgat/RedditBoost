@@ -832,6 +832,44 @@ var RedditBoostPlugin;
     })(utils.Singleton);
     RedditBoostPlugin.HoverPreview = new HoverPreviewPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
+var RedditBoostPlugin;
+(function (RedditBoostPlugin) {
+    var MirrorPlugin = (function (_super) {
+        __extends(MirrorPlugin, _super);
+        function MirrorPlugin() {
+            _super.apply(this, arguments);
+        }
+        Object.defineProperty(MirrorPlugin.prototype, "init", {
+            get: function () { return this._init; },
+            enumerable: true,
+            configurable: true
+        });
+        MirrorPlugin.prototype._init = function () {
+            var _this = this;
+            this.setSingleton();
+            $(document).on("click", ".RedditBoost_getMirror", function (event) {
+                _this._getMirror(event.currentTarget);
+            });
+            this._loadMirrorTags();
+        };
+        MirrorPlugin.prototype._loadMirrorTags = function () {
+            $('.link .entry p.title').each(function (index, elem) {
+                $(elem).append("<a href='javascript:void(0)' class='RedditBoost_getMirror RedditBoostTaglineEntry" + "' data-mirror-link='" + $(elem).children('.title').first().attr('href') + "'>mirror</a>");
+            });
+        };
+        MirrorPlugin.prototype._getMirror = function (element) {
+            var link = $(element).attr('data-mirror-link');
+            link = link.replace(/.*?:\/\//g, "");
+            $(element).text('loading mirror...');
+            $.get('http://127.0.0.1:5000/redditmirror/v1/mirror?url=' + link)
+                .done(function (data) {
+                window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedMirror", { "detail": data }));
+            });
+        };
+        return MirrorPlugin;
+    })(utils.Singleton);
+    RedditBoostPlugin.Mirror = new MirrorPlugin();
+})(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoost;
 (function (RedditBoost) {
     $(document).ready(function () {
@@ -840,5 +878,6 @@ var RedditBoost;
         RedditBoostPlugin.BanUserSubmissions.init();
         RedditBoostPlugin.BanCustomCss.init();
         RedditBoostPlugin.HoverPreview.init();
+        RedditBoostPlugin.Mirror.init();
     });
 })(RedditBoost || (RedditBoost = {}));

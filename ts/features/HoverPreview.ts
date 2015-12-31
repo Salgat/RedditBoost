@@ -266,6 +266,7 @@ module RedditBoostPlugin {
         private _displayImage(link: string) : void {
             if ((this._getExtension(link) == 'gif' || this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
                 // Imgur Gifs can be automatically played as gifv
+                // TODO: Cannot do this with static Gifs, need to determine this before hand
                 let name = HoverPreviewPlugin._getFileName(link).split('.')[0];
                 this._displayGifv(name, {source: HoverPreviewPlugin._getDomain(link), imgUrl: null, mp4Url: "//i.imgur.com/" + name + ".mp4", webmUrl: "//i.imgur.com/" + name + ".webm", gifUrl: null});
                 return;

@@ -244,3 +244,7 @@
     color: red;
     text-align: center;
 }
+
+.RedditBoost_getMirror:hover {
+    text-decoration: underline;
+}
