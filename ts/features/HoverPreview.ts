@@ -42,6 +42,8 @@ module RedditBoostPlugin {
         private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _failedLinks: string[] = [];
         private _requestedLinks: string[] = [];
+        private _lastMousePosition: {x: number, y: number} = {x: 0, y: 0};
+        private _imageUpdates: number = 0;
         
         get init() { return this._init; }
         
@@ -234,7 +236,6 @@ module RedditBoostPlugin {
         private _displayMedia(linkType: {link: string, extension: string, source: string, fileName: string}, mediaInformation?: {[fileName: string]: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}}) : void {
             if (this._failedLinks.indexOf(linkType.link) >= 0) {
                 // The image has already failed to load before, so don't try to display it again
-                // TODO: Perhaps indicate the image failed to load?
                 $('#RedditBoost_imagePopup').show();
                 $('.RedditBoost_Content').hide();
                 $('#RedditBoost_loadingAnimation').hide();
@@ -326,12 +327,26 @@ module RedditBoostPlugin {
             if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
 				// Once something starts loading, remove it
 				$("#RedditBoost_loadingAnimation").hide();
-			}
+			} else {
+                // Dont' start tracking image updates until after the image has loaded
+                this._imageUpdates = 0;
+            }
+            
+            // Don't update position or size if the mouse hasn't moved
+            if (Math.abs(this._lastMousePosition.x - this._mousePosition.x) < 1.0 && Math.abs(this._lastMousePosition.y - this._mousePosition.y) < 1.0 && this._imageUpdates > 15) {
+                return;
+            }
+            this._lastMousePosition.x = this._mousePosition.x;
+            this._lastMousePosition.y = this._mousePosition.y;
             
             // Display title text
             let title = $('a.title:hover, p a:hover').first().text();
             if (title != null && $('#RedditBoost_imagePopupTitle').text() != title) {
                 $('#RedditBoost_imagePopupTitle').text(title);
+                this._imageUpdates = 0;
+            } else {
+                // The link hasn't changed, so we can confirm that this update is occurruing on the same image
+                this._imageUpdates += 1;
             }
             
             // Get popup sizes
