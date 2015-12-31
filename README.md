@@ -13,22 +13,22 @@ As of now RedditBoost only works with Chrome. To setup, complete the following i
 ## Features
 RedditBoost is intended to be a lightweight and mostly seamless version of RES for a small set of features. Below are some of the features added.
 
-![](https://github.com/Salgat/BubbleGrow/blob/master/doc/usertag.png)
+![](https://github.com/Salgat/RedditBoost/blob/master/doc/usertag.png)
 - Tagging users
 
-![](https://github.com/Salgat/BubbleGrow/blob/master/doc/hoverpreview.png)
+![](https://github.com/Salgat/RedditBoost/blob/master/doc/hoverpreview.png)
 - Hover over image links to preview them
 
-![](https://github.com/Salgat/BubbleGrow/blob/master/doc/usersubmissionblock.png)
+![](https://github.com/Salgat/RedditBoost/blob/master/doc/usersubmissionblock.png)
 - Block all selected user's submissions
 
-![](https://github.com/Salgat/BubbleGrow/blob/master/doc/usercommentblock.png)
+![](https://github.com/Salgat/RedditBoost/blob/master/doc/usercommentblock.png)
 - Hide all selected user's comments
 
-![](https://github.com/Salgat/BubbleGrow/blob/master/doc/cssblock.png)
+![](https://github.com/Salgat/RedditBoost/blob/master/doc/cssblock.png)
 - Disable Subreddit CSS
 
-![](https://github.com/Salgat/BubbleGrow/blob/master/doc/mirror.png)
+![](https://github.com/Salgat/RedditBoost/blob/master/doc/mirror.png)
 - Link mirrors
 
 ## Feedback and contributions
