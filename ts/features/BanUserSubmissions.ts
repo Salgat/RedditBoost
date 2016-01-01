@@ -59,7 +59,7 @@ module RedditBoostPlugin {
                 var user = $(thisLink).children(".entry").children(".tagline").children(".author").text();
                 var tagline = $(thisLink).children(".entry").children(".tagline");
                 tagline.append(this._tagLineSpan(user, "blockUserSubmissions", "hide user submissions"));
-		});
+		    });
         }
         
         private _blockUserSubmissions(elem) {

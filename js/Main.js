@@ -384,6 +384,99 @@ var RedditBoostPlugin;
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
+    var BanSubredditsPlugin = (function (_super) {
+        __extends(BanSubredditsPlugin, _super);
+        function BanSubredditsPlugin() {
+            _super.apply(this, arguments);
+            this._bannedSubreddits = [];
+        }
+        Object.defineProperty(BanSubredditsPlugin.prototype, "init", {
+            get: function () { return this._init; },
+            enumerable: true,
+            configurable: true
+        });
+        BanSubredditsPlugin.prototype._init = function () {
+            var _this = this;
+            this.setSingleton();
+            var currentSubreddit = $(".redditname").first().text();
+            if (currentSubreddit != "" && currentSubreddit != "all") {
+                return;
+            }
+            $(document).on("click", ".blockSubreddit", function (event) {
+                _this._blockSubreddit(event.currentTarget);
+            });
+            $(document).on("click", ".unblockSubreddit", function (event) {
+                _this._unblockSubreddit(event.currentTarget);
+            });
+            window.addEventListener("RedditBoost_RetrievedSubredditBans", function (event) {
+                _this._retrievedSubredditBans(event);
+            }, false);
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetSubredditBans"));
+        };
+        BanSubredditsPlugin.prototype._retrievedSubredditBans = function (event) {
+            var _this = this;
+            if (!event.detail.hasOwnProperty("RedditBoost_BlockedSubreddits")) {
+                var bannedList = {};
+                bannedList["RedditBoost_BlockedSubreddits"] = this._bannedSubreddits;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StoreSubredditBans", { "detail": bannedList }));
+            }
+            else {
+                this._bannedSubreddits = event.detail["RedditBoost_BlockedSubreddits"];
+            }
+            $("*[data-type='link']").each(function (index, thisLink) {
+                var subreddit = $(thisLink).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
+                var tagline = $(thisLink).children(".entry").children(".tagline");
+                tagline.append(_this._tagLineSpan(subreddit, "blockSubreddit", "hide subreddit"));
+            });
+            $("*[data-type='link']").each(function (index, thisLink) {
+                var subreddit = $(thisLink).children(".entry").children(".tagline").children(".subreddit").text().substring(3);
+                if (_this._bannedSubreddits.indexOf(subreddit) >= 0) {
+                    var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit + "'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit + "'>show /r/" + subreddit + " links</a>" + "</div>";
+                    $(thisLink).after(element);
+                    $(thisLink).hide();
+                }
+            });
+        };
+        BanSubredditsPlugin.prototype._blockSubreddit = function (elem) {
+            var subreddit = $(elem).attr("data-subreddit");
+            this._bannedSubreddits.push(subreddit);
+            var bannedList = {};
+            bannedList["RedditBoost_BlockedSubreddits"] = this._bannedSubreddits;
+            window.dispatchEvent(new CustomEvent("RedditBoost_StoreSubredditBans", { "detail": bannedList }));
+            $("*[data-type='link']").each(function (index, thisLink) {
+                if ($(thisLink).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
+                    var element = "<div class='link RedditBoostTaglineEntry' style='text-align: center; background-color: #f2f2f2; border-radius: 3px; padding: 1px 0;' data-subredditbanned='" + subreddit + "'>" + $(thisLink).find("a.title").text() + " - " + "<a  href='javascript:void(0)' style='background-color: #e3e3e3 !important;' class='unblockSubreddit' data-subreddit='" + subreddit + "'>show /r/" + subreddit + " links</a>" + "</div>";
+                    $(thisLink).after(element);
+                    $(thisLink).hide();
+                }
+            });
+        };
+        BanSubredditsPlugin.prototype._unblockSubreddit = function (elem) {
+            var subreddit = $(elem).attr("data-subreddit");
+            var blockedIndex = this._bannedSubreddits.indexOf(subreddit);
+            if (blockedIndex >= 0) {
+                this._bannedSubreddits.splice(blockedIndex, 1);
+                var bannedList = {};
+                bannedList["RedditBoost_BlockedSubreddits"] = this._bannedSubreddits;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StoreSubredditBans", { "detail": bannedList }));
+            }
+            $("*[data-type='link']").each(function (index, thisLink) {
+                if ($(thisLink).children(".entry").children(".tagline").children(".subreddit").text().substring(3) == subreddit) {
+                    var element = $(thisLink).parent().find("*[data-subredditbanned=" + subreddit + "]");
+                    element.remove();
+                    $(thisLink).show();
+                }
+            });
+        };
+        BanSubredditsPlugin.prototype._tagLineSpan = function (subreddit, classToAdd, textToAdd) {
+            return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-subreddit='" + subreddit + "'>" + textToAdd + "</a>";
+        };
+        return BanSubredditsPlugin;
+    })(utils.Singleton);
+    RedditBoostPlugin.BanSubreddits = new BanSubredditsPlugin();
+})(RedditBoostPlugin || (RedditBoostPlugin = {}));
+var RedditBoostPlugin;
+(function (RedditBoostPlugin) {
     var BanCustomCssPlugin = (function (_super) {
         __extends(BanCustomCssPlugin, _super);
         function BanCustomCssPlugin() {
@@ -904,6 +997,7 @@ var RedditBoost;
         RedditBoostPlugin.TagUser.init();
         RedditBoostPlugin.BanUserComments.init();
         RedditBoostPlugin.BanUserSubmissions.init();
+        RedditBoostPlugin.BanSubreddits.init();
         RedditBoostPlugin.BanCustomCss.init();
         RedditBoostPlugin.HoverPreview.init();
         RedditBoostPlugin.Mirror.init();
