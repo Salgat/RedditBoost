@@ -10,6 +10,7 @@ Ideas:
 /// <reference path='features/TagUser.ts'/>
 /// <reference path='features/BanUserComments.ts'/>
 /// <reference path='features/BanUserSubmissions.ts'/>
+/// <reference path='features/BanSubreddits.ts'/>
 /// <reference path='features/BanCustomCss.ts'/>
 /// <reference path='features/HoverPreview.ts'/>
 /// <reference path='features/Mirror.ts'/>
@@ -20,6 +21,7 @@ namespace RedditBoost {
         RedditBoostPlugin.TagUser.init();
         RedditBoostPlugin.BanUserComments.init();
         RedditBoostPlugin.BanUserSubmissions.init();
+        RedditBoostPlugin.BanSubreddits.init();
         RedditBoostPlugin.BanCustomCss.init();
         RedditBoostPlugin.HoverPreview.init();
         RedditBoostPlugin.Mirror.init();
