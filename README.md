@@ -2,7 +2,7 @@
 A set of simple features to enhance reddit.
 
 ## Running
-As of now RedditBoost only works with Chrome. To setup, either [grab the extension from the Chrome web store](https://chrome.google.com/webstore/detail/redditboost/mjkfiabnnkmmcifffhekooamedohoojd) complete the following instructions,
+As of now RedditBoost only works with Chrome. To setup, either [grab the extension from the Chrome web store](https://chrome.google.com/webstore/detail/redditboost/mjkfiabnnkmmcifffhekooamedohoojd) or complete the following instructions,
 
 1. In Chrome, go to Settings->Extensions
 2. Check the "Developer mode" checkbox
