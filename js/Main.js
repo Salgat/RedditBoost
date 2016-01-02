@@ -869,7 +869,14 @@ var RedditBoostPlugin;
             else {
                 this._centerPopupVertically(popupHeight);
             }
-            $("#RedditBoost_loadingAnimation").css("left", popupWidth / 2 - 100);
+            var display = $("#RedditBoost_loadingAnimation").css('display');
+            if ($("#RedditBoost_loadingAnimation").css('display') == 'block') {
+                $("#RedditBoost_loadingAnimation").css("left", popupWidth / 2 - 100);
+                $("#RedditBoost_imagePopup").css("min-height", 220);
+            }
+            else {
+                $("#RedditBoost_imagePopup").css("min-height", 0);
+            }
         };
         HoverPreviewPlugin.prototype._findMostSpace = function (mouseLocation) {
             var windowWidth = $(window).width();
