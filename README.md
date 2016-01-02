@@ -1,7 +1,7 @@
 # RedditBoost
 A set of simple features to enhance reddit.
 
-<p align="center">[![Extension Download](https://github.com/Salgat/RedditBoost/blob/master/doc/extensionBanner.png)](https://chrome.google.com/webstore/detail/redditboost/mjkfiabnnkmmcifffhekooamedohoojd)</p>
+<p align="center"><a href="https://chrome.google.com/webstore/detail/redditboost/mjkfiabnnkmmcifffhekooamedohoojd"><img src ="https://github.com/Salgat/RedditBoost/blob/master/doc/extensionBanner.png" /></a></p>
 
 ## Running
 As of now RedditBoost only works with Chrome. To setup, either [grab the extension from the Chrome web store](https://chrome.google.com/webstore/detail/redditboost/mjkfiabnnkmmcifffhekooamedohoojd) or complete the following instructions,
