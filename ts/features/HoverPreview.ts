@@ -424,21 +424,25 @@ module RedditBoostPlugin {
             let distanceAbove = (this._mousePosition.y - $(window).scrollTop());
             let distanceBelow = $(window).height() - (this._mousePosition.y - $(window).scrollTop());
             
-            // TODO: Need to compare the newly calculated max-width/max-height against the current one. If the difference is negligible (<1?),
-            //       don't update the ma-width/max-height. This will prevent the shaking that sometimes occurs.
+            let maxHeight: number;
+            let maxWidth: number;
             if (region == Region.Left) {
-                $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
-                $('.RedditBoost_Content').css("max-width", distanceLeft - 30);
+                maxHeight = $(window).height() - 90;
+                maxWidth = distanceLeft - 30;
             } else if (region == Region.Right) {
-                $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
-                $('.RedditBoost_Content').css("max-width", distanceRight - 30);
+                maxHeight = $(window).height() - 90;
+                maxWidth = distanceRight - 30;
             } else if (region == Region.Above) {
-                $('.RedditBoost_Content').css("max-height", distanceAbove - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width()-15);
+                maxHeight = distanceAbove - 90;
+                maxWidth = $(window).width()-15;
             } else { // Region.Below
-                $('.RedditBoost_Content').css("max-height", distanceBelow - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width()-15);
+                maxHeight = distanceBelow - 90;
+                maxWidth = $(window).width()-15;
             }
+            $('.RedditBoost_Content').css("max-height", maxHeight);
+            $('.RedditBoost_Content').css("max-width", maxWidth);
+            $('#RedditBoost_imagePopupTitle').css("max-height", maxHeight);
+            $('#RedditBoost_imagePopupTitle').css("max-width", maxWidth);
         }
         
         /**
