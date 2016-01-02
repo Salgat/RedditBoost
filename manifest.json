@@ -2,6 +2,7 @@
   "name": "RedditBoost",
   "description": "A set of features to enhance reddit",
   "version": "0.5.0",
+  "icons" : { "128": "logo.png" },
   "permissions": [
     "storage"
   ],
