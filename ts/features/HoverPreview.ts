@@ -447,7 +447,13 @@ module RedditBoostPlugin {
             }
             
             // Update loading animation position
-            $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
+            let display = $("#RedditBoost_loadingAnimation").css('display');
+            if ($("#RedditBoost_loadingAnimation").css('display') == 'block') {
+                $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
+                $("#RedditBoost_imagePopup").css("min-height", 220);
+            } else {
+                $("#RedditBoost_imagePopup").css("min-height", 0);
+            }
         }
         
         /**
