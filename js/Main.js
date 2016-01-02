@@ -590,6 +590,7 @@ var RedditBoostPlugin;
             this._mousePosition = { x: 0, y: 0 };
             this._failedLinks = [];
             this._failedVideoLinks = [];
+            this._successfulVideoLinks = [];
             this._requestedLinks = [];
             this._lastMousePosition = { x: 0, y: 0 };
             this._imageUpdates = 0;
@@ -702,6 +703,12 @@ var RedditBoostPlugin;
             }
             return false;
         };
+        HoverPreviewPlugin.prototype._successfulLoadingVideo = function () {
+            if ($('.RedditBoost_Content').is('video') && (this._successfulVideoLinks.indexOf($('#RedditBoost_imageWebm').attr('src').replace(/.*?:\/\//g, "")) >= 0 || this._successfulVideoLinks.indexOf($('#RedditBoost_imageMp4').attr('src').replace(/.*?:\/\//g, "")) >= 0)) {
+                return true;
+            }
+            return false;
+        };
         HoverPreviewPlugin.prototype._tryPreview = function (linkType) {
             if (this._imageCache[linkType.fileName.toLowerCase()] != null) {
                 var mediaInformation = this._imageCache[linkType.fileName.toLowerCase()];
@@ -790,14 +797,21 @@ var RedditBoostPlugin;
                 $('#RedditBoost_imageMp4').bind('error', function (event) {
                     _this._handleGifvErrorLoading(event);
                 });
+                $('.RedditBoost_Content').bind('loadeddata', function (event) {
+                    _this._handleGifvLoad(event);
+                });
             }
             $('#RedditBoost_imagePopup').show();
         };
         HoverPreviewPlugin.prototype._handleGifvErrorLoading = function (event) {
             var failedSource = event.target.attributes.src.value;
             failedSource = failedSource.replace(/.*?:\/\//g, "");
-            console.log("Failed loading for: " + failedSource);
             this._failedVideoLinks.push(failedSource);
+        };
+        HoverPreviewPlugin.prototype._handleGifvLoad = function (event) {
+            var successfulSource = $(event.target).children('#RedditBoost_imageMp4').attr('src');
+            successfulSource = successfulSource.replace(/.*?:\/\//g, "");
+            this._successfulVideoLinks.push(successfulSource);
         };
         HoverPreviewPlugin.prototype._adjustPreviewPopup = function () {
             if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0 && !this._failedLoadingVideo()) {
@@ -806,10 +820,19 @@ var RedditBoostPlugin;
             else {
                 this._imageUpdates = 0;
             }
-            if (this._failedLoadingVideo()) {
+            if ($(".RedditBoost_Content").is('video') && !this._failedLoadingVideo() && !this._successfulLoadingVideo()) {
+                $("#RedditBoost_loadingAnimation").show();
+                $('.RedditBoost_Content').hide();
+                this._imageUpdates = 0;
+            }
+            else if (this._failedLoadingVideo()) {
                 $("#RedditBoost_loadingAnimation").hide();
                 $('#RedditBoost_failedLoading').show();
                 $('.RedditBoost_Content').hide();
+            }
+            else if (this._successfulLoadingVideo()) {
+                $("#RedditBoost_loadingAnimation").hide();
+                $('.RedditBoost_Content').show();
             }
             if (Math.abs(this._lastMousePosition.x - this._mousePosition.x) < 1.0 && Math.abs(this._lastMousePosition.y - this._mousePosition.y) < 1.0 && this._imageUpdates > 15) {
                 return;

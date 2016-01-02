@@ -42,6 +42,7 @@ module RedditBoostPlugin {
         private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _failedLinks: string[] = [];
         private _failedVideoLinks: string[] = [];
+        private _successfulVideoLinks: string[] = [];
         private _requestedLinks: string[] = [];
         private _lastMousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _imageUpdates: number = 0;
@@ -217,6 +218,16 @@ module RedditBoostPlugin {
         }
         
         /**
+         * Returns true if the current element is a video element and successfuly loaded.
+         */
+        private _successfulLoadingVideo() : boolean {
+            if ($('.RedditBoost_Content').is('video') && (this._successfulVideoLinks.indexOf($('#RedditBoost_imageWebm').attr('src').replace(/.*?:\/\//g, "")) >= 0 || this._successfulVideoLinks.indexOf($('#RedditBoost_imageMp4').attr('src').replace(/.*?:\/\//g, "")) >= 0)) {
+                return true;
+            }
+            return false;
+        }
+        
+        /**
          * Attempts to show a preview of the media, starting an async call for more information if needed.
          */
         private _tryPreview(linkType: {link: string, extension: string, source: string, fileName: string}) : void {
@@ -323,24 +334,38 @@ module RedditBoostPlugin {
                 }
             
                 // Handle failed image load
-                // TODO: Add errors for each source, if both gave errors, then do the failed loading
-                // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video#Error_handling
                 $('#RedditBoost_imageWebm').bind('error', (event) => {
                     this._handleGifvErrorLoading(event);
                 });
                 $('#RedditBoost_imageMp4').bind('error', (event) => {
                     this._handleGifvErrorLoading(event);
                 });
+                
+                // Handle successful image loading
+                $('.RedditBoost_Content').bind('loadeddata', (event) => {
+                    this._handleGifvLoad(event);
+                });
             }
             
             $('#RedditBoost_imagePopup').show();
         }
         
+        /**
+         * Records when a failure of a video source to load occurs.
+         */
         private _handleGifvErrorLoading(event) {
             let failedSource = event.target.attributes.src.value;
             failedSource = failedSource.replace(/.*?:\/\//g, ""); // Remove protocol if present
-            console.log("Failed loading for: " + failedSource);
             this._failedVideoLinks.push(failedSource);
+        }
+        
+        /**
+         * Records when a video source load occurs successfully.
+         */
+        private _handleGifvLoad(event) {
+            let successfulSource = $(event.target).children('#RedditBoost_imageMp4').attr('src');
+            successfulSource = successfulSource.replace(/.*?:\/\//g, ""); // Remove protocol if present
+            this._successfulVideoLinks.push(successfulSource);
         }
         
         /**
@@ -355,11 +380,19 @@ module RedditBoostPlugin {
                 // Dont' start tracking image updates until after the image has loaded
                 this._imageUpdates = 0;
             }
-            
-            if (this._failedLoadingVideo()) {
+        
+            if ($(".RedditBoost_Content").is('video') && !this._failedLoadingVideo() && !this._successfulLoadingVideo()) {
+                // Neither failed or loaded video, so it must be loading still
+                $("#RedditBoost_loadingAnimation").show();
+                $('.RedditBoost_Content').hide();
+                this._imageUpdates = 0;
+            } else if (this._failedLoadingVideo()) {
                 $("#RedditBoost_loadingAnimation").hide();
                 $('#RedditBoost_failedLoading').show();
                 $('.RedditBoost_Content').hide();
+            } else if (this._successfulLoadingVideo()) {
+                $("#RedditBoost_loadingAnimation").hide();
+                $('.RedditBoost_Content').show();
             }
             
             // Don't update position or size if the mouse hasn't moved
