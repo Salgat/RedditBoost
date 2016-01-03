@@ -100,7 +100,6 @@
 	background-color: white;
 	z-index: 10000;
 	min-width: 200px;
-	min-height: 220px;
 }
 
 #RedditBoost_imagePopup .RedditBoost_Content {
@@ -247,4 +246,8 @@
 
 .RedditBoost_getMirror:hover {
     text-decoration: underline;
+}
+
+.RedditBoost_PreviewedLink {
+    color: #551a8b !important;
 }

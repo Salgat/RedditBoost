@@ -1,4 +1,5 @@
 /// <reference path="../utils/Singleton.ts" />
+/// <reference path="../utils/Cookies.ts" />
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
 
@@ -32,15 +33,17 @@ module RedditBoostPlugin {
                                 
         private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
                             
-        private _lastLink: { lastLink: string, isActive: boolean, element: Element} = { lastLink: "", isActive: false, element: null};
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
         private _supportedDomains: RegExp;
         private _staticImageType: RegExp;
         private _gifImageType: RegExp;
         private _imageCache: {[fileName: string]: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
+        private _thumbnailCache: {[thumbnailHref: string]: {thumbnailSource: string}} = {};
         private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _failedLinks: string[] = [];
+        private _failedVideoLinks: string[] = [];
+        private _successfulVideoLinks: string[] = [];
         private _requestedLinks: string[] = [];
         private _lastMousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _imageUpdates: number = 0;
@@ -79,8 +82,32 @@ module RedditBoostPlugin {
                 this._mousePosition.y = event.pageY;
             });
             
+            // Update previewed links color
+            this._updatePreviewedLinks();
+            
             // Call preview logic at ~60Hz (note that the lambda style syntax is to preserve 'this' context)
             setInterval(() => {this._showPreview();}, 15);
+        }
+        
+        /**
+         * Set links as previewed.
+         */
+        private _updatePreviewedLinks(visitedLink?: string) {
+            // First get the list of already visited links
+            let visitedLinksCookie = utils.Cookies.getCookie('RedditBoost_VisitedLinks');
+            if (visitedLinksCookie == null) visitedLinksCookie = "";
+            let visitedLinks = visitedLinksCookie.split(' '); // Space is disallowed in URLs, so it is used as a delimiter
+            
+            // If a new visited link is provided, update the cookie
+            if (visitedLink != null && visitedLinks.indexOf(visitedLink) < 0) {
+                visitedLinks.push(visitedLink);
+                utils.Cookies.setCookie('RedditBoost_VisitedLinks', visitedLinks.join(' '));
+            }
+            
+            // Add visited class to all visited links.
+            visitedLinks.forEach(function(link) {
+               $("a[href='" + link +"']").addClass('RedditBoost_PreviewedLink'); // May want to add a reddit supported class instead
+            });
         }
         
         /**
@@ -93,19 +120,37 @@ module RedditBoostPlugin {
             
             // Check if mouse is hovering over a link
             let hoveredLink = $('a.title:hover, form a:hover').first();
+            let hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
                 // Get link type and attempt to display if a supported media format
                 let linkType =  this._getLinkType($(hoveredLink).attr("href"));
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
                     this._tryPreview(linkType);
+                    this._adjustPreviewPopup();
+                } else {
+                    // Remove link preview and reset state
+                    $('#RedditBoost_imagePopup').hide();
                 }
-                
-                this._adjustPreviewPopup();
+            } else if (hoveredThumbnail.length > 0) {
+                // Check if the thumbnail exists in cache
+                let thumbnailHref = hoveredThumbnail.attr('href');
+                if (this._thumbnailCache[thumbnailHref] != null && this._thumbnailCache[thumbnailHref].thumbnailSource != null) {
+                    // Display the thumbnail image
+                    this._tryPreview(this._getLinkType(this._thumbnailCache[thumbnailHref].thumbnailSource));
+                    this._adjustPreviewPopup();
+                } else if (this._thumbnailCache[thumbnailHref] == null) {
+                    // Get the thumbnail original image
+                    let redditLink = hoveredThumbnail.parent().find('.comments').attr('href');
+                    if (redditLink != null) {
+                        this._getThumbnailData(thumbnailHref, redditLink);
+                    }
+                } else {
+                     $('#RedditBoost_imagePopup').hide();
+                }
             } else {
                 // Remove link preview and reset state
                 $('#RedditBoost_imagePopup').hide();
-                this._lastLink = { lastLink: "", isActive: false, element: null};
             }
             
             this._processing = false;
@@ -179,6 +224,8 @@ module RedditBoostPlugin {
                 return true;
             }
             
+            // Finally check for special 
+            
             return false;
         }
         
@@ -201,6 +248,26 @@ module RedditBoostPlugin {
                     // Exclude from the supported domains galleries and albums
                     return true;
                 }
+            }
+            return false;
+        }
+        
+        /**
+         * Returns true if the current element is a Video element that failed to load.
+         */
+        private _failedLoadingVideo() : boolean {
+            if ($('.RedditBoost_Content').is('video') && this._failedVideoLinks.indexOf($('#RedditBoost_imageWebm').attr('src')) >= 0 && this._failedVideoLinks.indexOf($('#RedditBoost_imageMp4').attr('src')) >= 0) {
+                return true;
+            }
+            return false;
+        }
+        
+        /**
+         * Returns true if the current element is a video element and successfuly loaded.
+         */
+        private _successfulLoadingVideo() : boolean {
+            if ($('.RedditBoost_Content').is('video') && (this._successfulVideoLinks.indexOf($('#RedditBoost_imageWebm').attr('src').replace(/.*?:\/\//g, "")) >= 0 || this._successfulVideoLinks.indexOf($('#RedditBoost_imageMp4').attr('src').replace(/.*?:\/\//g, "")) >= 0)) {
+                return true;
             }
             return false;
         }
@@ -279,11 +346,17 @@ module RedditBoostPlugin {
             // Display IMG element if current content is not correct
             if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != link) {
                 $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
-                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + link + "' id='imagePopupImg'>");
+                let hoveredLink = $('a.title:hover, form a:hover').first();
+                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' data-original-source='" + hoveredLink.attr('href') +"' src='" + link + "' id='imagePopupImg'>");
             
                 // Handle failed image load
                 $('.RedditBoost_Content').bind('error', (event) => {
                     this._handleErrorLoading(event);
+                });
+                
+                // Handle successful image loading
+                $('.RedditBoost_Content').bind('load', (event) => {
+                    this._handleImgLoad(event);
                 });
             }
             
@@ -303,6 +376,9 @@ module RedditBoostPlugin {
                 $('#RedditBoost_imagePopup').append(this._gifvPlayer);
                 $('#RedditBoost_imagePopup .RedditBoost_Content').attr('data-fileName', fileName);
                 
+                let hoveredLink = $('a.title:hover, form a:hover').first();
+                $('#RedditBoost_imagePopup .RedditBoost_Content').attr('data-original-source', hoveredLink.attr('href'));
+                
                 if (mediaInformation.source == 'imgur.com') {
                     $('#RedditBoost_imageWebm').attr("src", mediaInformation.webmUrl);
 				    $('#RedditBoost_imageMp4').attr("src", mediaInformation.mp4Url);
@@ -312,8 +388,16 @@ module RedditBoostPlugin {
                 }
             
                 // Handle failed image load
-                $('.RedditBoost_Content').bind('error', (event) => {
-                    this._handleErrorLoading(event);
+                $('#RedditBoost_imageWebm').bind('error', (event) => {
+                    this._handleGifvErrorLoading(event);
+                });
+                $('#RedditBoost_imageMp4').bind('error', (event) => {
+                    this._handleGifvErrorLoading(event);
+                });
+                
+                // Handle successful image loading
+                $('.RedditBoost_Content').bind('loadeddata', (event) => {
+                    this._handleGifvLoad(event);
                 });
             }
             
@@ -321,16 +405,56 @@ module RedditBoostPlugin {
         }
         
         /**
+         * Records when a failure of a video source to load occurs.
+         */
+        private _handleGifvErrorLoading(event) {
+            let failedSource = event.target.attributes.src.value;
+            failedSource = failedSource.replace(/.*?:\/\//g, ""); // Remove protocol if present
+            this._failedVideoLinks.push(failedSource);
+        }
+        
+        /**
+         * Records when a video source load occurs successfully.
+         */
+        private _handleGifvLoad(event) {
+            let successfulSource = $(event.target).children('#RedditBoost_imageMp4').attr('src');
+            successfulSource = successfulSource.replace(/.*?:\/\//g, ""); // Remove protocol if present
+            this._successfulVideoLinks.push(successfulSource);
+            this._updatePreviewedLinks($(event.target).attr('data-original-source'));
+        }
+        
+        /**
+         * Handles when an img load occurs successfully.
+         */
+        private _handleImgLoad(event) {
+            this._updatePreviewedLinks($(event.target).attr('data-original-source'));
+        }
+        
+        /**
          * Adjusts the popup screen and automatically removes the loading animation.
          */
         private _adjustPreviewPopup() {
-            if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0) {
+            if ($(".RedditBoost_Content").height() && $(".RedditBoost_Content:visible").length > 0 && !this._failedLoadingVideo()) {
 				// Once something starts loading, remove it
                 // TODO: This is not detecting when a gifv loads
 				$("#RedditBoost_loadingAnimation").hide();
 			} else {
                 // Dont' start tracking image updates until after the image has loaded
                 this._imageUpdates = 0;
+            }
+        
+            if ($(".RedditBoost_Content").is('video') && !this._failedLoadingVideo() && !this._successfulLoadingVideo()) {
+                // Neither failed or loaded video, so it must be loading still
+                $("#RedditBoost_loadingAnimation").show();
+                $('.RedditBoost_Content').hide();
+                this._imageUpdates = 0;
+            } else if (this._failedLoadingVideo()) {
+                $("#RedditBoost_loadingAnimation").hide();
+                $('#RedditBoost_failedLoading').show();
+                $('.RedditBoost_Content').hide();
+            } else if (this._successfulLoadingVideo()) {
+                $("#RedditBoost_loadingAnimation").hide();
+                $('.RedditBoost_Content').show();
             }
             
             // Don't update position or size if the mouse hasn't moved
@@ -385,7 +509,13 @@ module RedditBoostPlugin {
             }
             
             // Update loading animation position
-            $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
+            let display = $("#RedditBoost_loadingAnimation").css('display');
+            if ($("#RedditBoost_loadingAnimation").css('display') == 'block') {
+                $("#RedditBoost_loadingAnimation").css("left", popupWidth/2 - 100);
+                $("#RedditBoost_imagePopup").css("min-height", 220);
+            } else {
+                $("#RedditBoost_imagePopup").css("min-height", 0);
+            }
         }
         
         /**
@@ -424,21 +554,25 @@ module RedditBoostPlugin {
             let distanceAbove = (this._mousePosition.y - $(window).scrollTop());
             let distanceBelow = $(window).height() - (this._mousePosition.y - $(window).scrollTop());
             
-            // TODO: Need to compare the newly calculated max-width/max-height against the current one. If the difference is negligible (<1?),
-            //       don't update the ma-width/max-height. This will prevent the shaking that sometimes occurs.
+            let maxHeight: number;
+            let maxWidth: number;
             if (region == Region.Left) {
-                $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
-                $('.RedditBoost_Content').css("max-width", distanceLeft - 30);
+                maxHeight = $(window).height() - 90;
+                maxWidth = distanceLeft - 30;
             } else if (region == Region.Right) {
-                $('.RedditBoost_Content').css("max-height", $(window).height() - 90);
-                $('.RedditBoost_Content').css("max-width", distanceRight - 30);
+                maxHeight = $(window).height() - 90;
+                maxWidth = distanceRight - 30;
             } else if (region == Region.Above) {
-                $('.RedditBoost_Content').css("max-height", distanceAbove - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width()-15);
+                maxHeight = distanceAbove - 90;
+                maxWidth = $(window).width()-15;
             } else { // Region.Below
-                $('.RedditBoost_Content').css("max-height", distanceBelow - 90);
-                $('.RedditBoost_Content').css("max-width", $(window).width()-15);
+                maxHeight = distanceBelow - 90;
+                maxWidth = $(window).width()-15;
             }
+            $('.RedditBoost_Content').css("max-height", maxHeight);
+            $('.RedditBoost_Content').css("max-width", maxWidth);
+            $('#RedditBoost_imagePopupTitle').css("max-height", maxHeight);
+            $('#RedditBoost_imagePopupTitle').css("max-width", maxWidth);
         }
         
         /**
@@ -496,6 +630,20 @@ module RedditBoostPlugin {
             $.get(imageApiUrl)
             .done((data) => {
                 window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedGfycatData", { "detail": data }));
+            });
+        }
+        private _getThumbnailData(thumbnailHref: string, redditLink: string) : void {
+            this._thumbnailCache[thumbnailHref] = {thumbnailSource: null};
+            
+            let redditLinkJsonUrl = redditLink + '.json';
+            $.get(redditLinkJsonUrl)
+            .done((data) => {
+                try {
+                    this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                }
+                catch(err) {
+                    // no preview exists
+                }
             });
         }
         
