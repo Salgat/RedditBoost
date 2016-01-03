@@ -247,3 +247,7 @@
 .RedditBoost_getMirror:hover {
     text-decoration: underline;
 }
+
+.RedditBoost_PreviewedLink {
+    color: #551a8b;
+}

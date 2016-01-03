@@ -1,4 +1,5 @@
 /// <reference path="../utils/Singleton.ts" />
+/// <reference path="../utils/Cookies.ts" />
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
 
@@ -83,6 +84,26 @@ module RedditBoostPlugin {
             
             // Call preview logic at ~60Hz (note that the lambda style syntax is to preserve 'this' context)
             setInterval(() => {this._showPreview();}, 15);
+        }
+        
+        /**
+         * Set links as previewed.
+         */
+        private _updatePreviewedLinks(visitedLink?: string) {
+            // First get the list of already visited links
+            let visitedLinksCookie = utils.Cookies.getCookie('RedditBoost_VisitedLinks');
+            let visitedLinks = visitedLinksCookie.split(' '); // Space is disallowed in URLs, so it is used as a delimiter
+            
+            // If a new visited link is provided, update the cookie
+            if (visitedLink != null) {
+                visitedLinks.push(visitedLink);
+                utils.Cookies.setCookie('RedditBoost_VisitedLinks', visitedLinks.join(' '));
+            }
+            
+            // Add visited class to all visited links.
+            visitedLinks.forEach(function(link) {
+               $("a[src='" + link +"']").addClass('RedditBoost_PreviewedLink'); // May want to add a reddit supported class instead
+            });
         }
         
         /**
