@@ -33,7 +33,6 @@ module RedditBoostPlugin {
                                 
         private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
                             
-        private _lastLink: { lastLink: string, isActive: boolean, element: Element} = { lastLink: "", isActive: false, element: null};
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
         private _supportedDomains: RegExp;
@@ -126,13 +125,14 @@ module RedditBoostPlugin {
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
                     this._tryPreview(linkType);
+                    this._adjustPreviewPopup();
+                } else {
+                    // Remove link preview and reset state
+                    $('#RedditBoost_imagePopup').hide();
                 }
-                
-                this._adjustPreviewPopup();
             } else {
                 // Remove link preview and reset state
                 $('#RedditBoost_imagePopup').hide();
-                this._lastLink = { lastLink: "", isActive: false, element: null};
             }
             
             this._processing = false;

@@ -603,7 +603,6 @@ var RedditBoostPlugin;
                                 <source src='' id='RedditBoost_imageMp4'	type='video/mp4'>																		\
                                 </video>																												";
             this._failedLoading = "<div id='RedditBoost_failedLoading'>X</div>";
-            this._lastLink = { lastLink: "", isActive: false, element: null };
             this._processing = false;
             this._imageCache = {};
             this._mousePosition = { x: 0, y: 0 };
@@ -668,12 +667,14 @@ var RedditBoostPlugin;
                 var linkType = this._getLinkType($(hoveredLink).attr("href"));
                 if (this._isSupported(linkType)) {
                     this._tryPreview(linkType);
+                    this._adjustPreviewPopup();
                 }
-                this._adjustPreviewPopup();
+                else {
+                    $('#RedditBoost_imagePopup').hide();
+                }
             }
             else {
                 $('#RedditBoost_imagePopup').hide();
-                this._lastLink = { lastLink: "", isActive: false, element: null };
             }
             this._processing = false;
         };
