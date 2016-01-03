@@ -687,6 +687,9 @@ var RedditBoostPlugin;
                         this._getThumbnailData(thumbnailHref, redditLink);
                     }
                 }
+                else {
+                    $('#RedditBoost_imagePopup').hide();
+                }
             }
             else {
                 $('#RedditBoost_imagePopup').hide();

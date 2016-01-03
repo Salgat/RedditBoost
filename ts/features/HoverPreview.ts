@@ -145,6 +145,8 @@ module RedditBoostPlugin {
                     if (redditLink != null) {
                         this._getThumbnailData(thumbnailHref, redditLink);
                     }
+                } else {
+                     $('#RedditBoost_imagePopup').hide();
                 }
             } else {
                 // Remove link preview and reset state
