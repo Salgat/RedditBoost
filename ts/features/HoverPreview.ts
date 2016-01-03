@@ -636,7 +636,12 @@ module RedditBoostPlugin {
             let redditLinkJsonUrl = redditLink + '.json';
             $.get(redditLinkJsonUrl)
             .done((data) => {
-                this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                try {
+                    this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                }
+                catch(err) {
+                    // no preview exists
+                }
             });
         }
         

@@ -1029,7 +1029,11 @@ var RedditBoostPlugin;
             var redditLinkJsonUrl = redditLink + '.json';
             $.get(redditLinkJsonUrl)
                 .done(function (data) {
-                _this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                try {
+                    _this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                }
+                catch (err) {
+                }
             });
         };
         HoverPreviewPlugin.prototype._handleImgurResponse = function () {
