@@ -605,6 +605,7 @@ var RedditBoostPlugin;
             this._failedLoading = "<div id='RedditBoost_failedLoading'>X</div>";
             this._processing = false;
             this._imageCache = {};
+            this._thumbnailCache = {};
             this._mousePosition = { x: 0, y: 0 };
             this._failedLinks = [];
             this._failedVideoLinks = [];
@@ -663,11 +664,28 @@ var RedditBoostPlugin;
                 return;
             this._processing = true;
             var hoveredLink = $('a.title:hover, form a:hover').first();
+            var hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
                 var linkType = this._getLinkType($(hoveredLink).attr("href"));
                 if (this._isSupported(linkType)) {
                     this._tryPreview(linkType);
                     this._adjustPreviewPopup();
+                }
+                else {
+                    $('#RedditBoost_imagePopup').hide();
+                }
+            }
+            else if (hoveredThumbnail.length > 0) {
+                var thumbnailHref = hoveredThumbnail.attr('href');
+                if (this._thumbnailCache[thumbnailHref] != null && this._thumbnailCache[thumbnailHref].thumbnailSource != null) {
+                    this._tryPreview(this._getLinkType(this._thumbnailCache[thumbnailHref].thumbnailSource));
+                    this._adjustPreviewPopup();
+                }
+                else if (this._thumbnailCache[thumbnailHref] == null) {
+                    var redditLink = hoveredThumbnail.parent().find('.comments').attr('href');
+                    if (redditLink != null) {
+                        this._getThumbnailData(thumbnailHref, redditLink);
+                    }
                 }
                 else {
                     $('#RedditBoost_imagePopup').hide();
@@ -1006,6 +1024,19 @@ var RedditBoostPlugin;
             $.get(imageApiUrl)
                 .done(function (data) {
                 window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedGfycatData", { "detail": data }));
+            });
+        };
+        HoverPreviewPlugin.prototype._getThumbnailData = function (thumbnailHref, redditLink) {
+            var _this = this;
+            this._thumbnailCache[thumbnailHref] = { thumbnailSource: null };
+            var redditLinkJsonUrl = redditLink + '.json';
+            $.get(redditLinkJsonUrl)
+                .done(function (data) {
+                try {
+                    _this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                }
+                catch (err) {
+                }
             });
         };
         HoverPreviewPlugin.prototype._handleImgurResponse = function () {

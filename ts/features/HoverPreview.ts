@@ -39,6 +39,7 @@ module RedditBoostPlugin {
         private _staticImageType: RegExp;
         private _gifImageType: RegExp;
         private _imageCache: {[fileName: string]: {source: string, imgUrl: string, mp4Url: string, webmUrl: string, gifUrl: string}} = {};
+        private _thumbnailCache: {[thumbnailHref: string]: {thumbnailSource: string}} = {};
         private _mousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _failedLinks: string[] = [];
         private _failedVideoLinks: string[] = [];
@@ -119,6 +120,7 @@ module RedditBoostPlugin {
             
             // Check if mouse is hovering over a link
             let hoveredLink = $('a.title:hover, form a:hover').first();
+            let hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
                 // Get link type and attempt to display if a supported media format
                 let linkType =  this._getLinkType($(hoveredLink).attr("href"));
@@ -129,6 +131,22 @@ module RedditBoostPlugin {
                 } else {
                     // Remove link preview and reset state
                     $('#RedditBoost_imagePopup').hide();
+                }
+            } else if (hoveredThumbnail.length > 0) {
+                // Check if the thumbnail exists in cache
+                let thumbnailHref = hoveredThumbnail.attr('href');
+                if (this._thumbnailCache[thumbnailHref] != null && this._thumbnailCache[thumbnailHref].thumbnailSource != null) {
+                    // Display the thumbnail image
+                    this._tryPreview(this._getLinkType(this._thumbnailCache[thumbnailHref].thumbnailSource));
+                    this._adjustPreviewPopup();
+                } else if (this._thumbnailCache[thumbnailHref] == null) {
+                    // Get the thumbnail original image
+                    let redditLink = hoveredThumbnail.parent().find('.comments').attr('href');
+                    if (redditLink != null) {
+                        this._getThumbnailData(thumbnailHref, redditLink);
+                    }
+                } else {
+                     $('#RedditBoost_imagePopup').hide();
                 }
             } else {
                 // Remove link preview and reset state
@@ -205,6 +223,8 @@ module RedditBoostPlugin {
             if (this._isSupportedDomain(linkType.source, linkType.link)) {
                 return true;
             }
+            
+            // Finally check for special 
             
             return false;
         }
@@ -610,6 +630,20 @@ module RedditBoostPlugin {
             $.get(imageApiUrl)
             .done((data) => {
                 window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedGfycatData", { "detail": data }));
+            });
+        }
+        private _getThumbnailData(thumbnailHref: string, redditLink: string) : void {
+            this._thumbnailCache[thumbnailHref] = {thumbnailSource: null};
+            
+            let redditLinkJsonUrl = redditLink + '.json';
+            $.get(redditLinkJsonUrl)
+            .done((data) => {
+                try {
+                    this._thumbnailCache[thumbnailHref].thumbnailSource = data[0]['data']['children'][0]['data']['preview']['images'][0]['source']['url'];
+                }
+                catch(err) {
+                    // no preview exists
+                }
             });
         }
         
