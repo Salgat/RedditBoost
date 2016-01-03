@@ -1,4 +1,5 @@
 /// <reference path="../utils/Singleton.ts" />
+/// <reference path="../utils/Cookies.ts" />
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
 
@@ -81,8 +82,32 @@ module RedditBoostPlugin {
                 this._mousePosition.y = event.pageY;
             });
             
+            // Update previewed links color
+            this._updatePreviewedLinks();
+            
             // Call preview logic at ~60Hz (note that the lambda style syntax is to preserve 'this' context)
             setInterval(() => {this._showPreview();}, 15);
+        }
+        
+        /**
+         * Set links as previewed.
+         */
+        private _updatePreviewedLinks(visitedLink?: string) {
+            // First get the list of already visited links
+            let visitedLinksCookie = utils.Cookies.getCookie('RedditBoost_VisitedLinks');
+            if (visitedLinksCookie == null) visitedLinksCookie = "";
+            let visitedLinks = visitedLinksCookie.split(' '); // Space is disallowed in URLs, so it is used as a delimiter
+            
+            // If a new visited link is provided, update the cookie
+            if (visitedLink != null && visitedLinks.indexOf(visitedLink) < 0) {
+                visitedLinks.push(visitedLink);
+                utils.Cookies.setCookie('RedditBoost_VisitedLinks', visitedLinks.join(' '));
+            }
+            
+            // Add visited class to all visited links.
+            visitedLinks.forEach(function(link) {
+               $("a[href='" + link +"']").addClass('RedditBoost_PreviewedLink'); // May want to add a reddit supported class instead
+            });
         }
         
         /**
@@ -301,11 +326,17 @@ module RedditBoostPlugin {
             // Display IMG element if current content is not correct
             if ($('#RedditBoost_imagePopup .RedditBoost_Content').attr('src') != link) {
                 $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
-                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' src='" + link + "' id='imagePopupImg'>");
+                let hoveredLink = $('a.title:hover, form a:hover').first();
+                $('#RedditBoost_imagePopup').append("<img class='RedditBoost_Content' data-original-source='" + hoveredLink.attr('href') +"' src='" + link + "' id='imagePopupImg'>");
             
                 // Handle failed image load
                 $('.RedditBoost_Content').bind('error', (event) => {
                     this._handleErrorLoading(event);
+                });
+                
+                // Handle successful image loading
+                $('.RedditBoost_Content').bind('load', (event) => {
+                    this._handleImgLoad(event);
                 });
             }
             
@@ -324,6 +355,9 @@ module RedditBoostPlugin {
                 $('#RedditBoost_imagePopup .RedditBoost_Content').remove();
                 $('#RedditBoost_imagePopup').append(this._gifvPlayer);
                 $('#RedditBoost_imagePopup .RedditBoost_Content').attr('data-fileName', fileName);
+                
+                let hoveredLink = $('a.title:hover, form a:hover').first();
+                $('#RedditBoost_imagePopup .RedditBoost_Content').attr('data-original-source', hoveredLink.attr('href'));
                 
                 if (mediaInformation.source == 'imgur.com') {
                     $('#RedditBoost_imageWebm').attr("src", mediaInformation.webmUrl);
@@ -366,6 +400,14 @@ module RedditBoostPlugin {
             let successfulSource = $(event.target).children('#RedditBoost_imageMp4').attr('src');
             successfulSource = successfulSource.replace(/.*?:\/\//g, ""); // Remove protocol if present
             this._successfulVideoLinks.push(successfulSource);
+            this._updatePreviewedLinks($(event.target).attr('data-original-source'));
+        }
+        
+        /**
+         * Handles when an img load occurs successfully.
+         */
+        private _handleImgLoad(event) {
+            this._updatePreviewedLinks($(event.target).attr('data-original-source'));
         }
         
         /**
