@@ -82,12 +82,17 @@ module RedditBoostPlugin {
                 this._mousePosition.y = event.pageY;
             });
             
+            // Make sure previewed links is not too largest
+            window.addEventListener("RedditBoost_RetrievedPreviewedLinksSize", (event) => {
+                this._retrievedPreviewedLinksSize(event);
+            }, false);
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinksSize"));
+            
             // Update previewed links color
-            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinks"));
             window.addEventListener("RedditBoost_RetrievedPreviewedLinks", (event) => {
                 this._retrievedPreviewedLinks(event);
             }, false);
-            //this._updatePreviewedLinks();
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinks"));
             
             // Call preview logic at ~60Hz (note that the lambda style syntax is to preserve 'this' context)
             setInterval(() => {this._showPreview();}, 15);
@@ -126,6 +131,18 @@ module RedditBoostPlugin {
             }
             
             this._updatePreviewedLinks();
+        }
+        
+        /**
+         * Wipes the previewed links memory if the size is near the limit.
+         */
+        private _retrievedPreviewedLinksSize(event) {
+            if (event.detail != null && event.detail > 1000000) {
+                // Create a new empty entry in storage
+                var previewedLinksList = {}; 
+                previewedLinksList["RedditBoost_PreviewedLinks"] = this._previewedLinks;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StorePreviewedLinks", { "detail": previewedLinksList }));
+            }
         }
         
         /**

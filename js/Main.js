@@ -625,10 +625,14 @@ var RedditBoostPlugin;
                 _this._mousePosition.x = event.pageX;
                 _this._mousePosition.y = event.pageY;
             });
-            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinks"));
+            window.addEventListener("RedditBoost_RetrievedPreviewedLinksSize", function (event) {
+                _this._retrievedPreviewedLinksSize(event);
+            }, false);
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinksSize"));
             window.addEventListener("RedditBoost_RetrievedPreviewedLinks", function (event) {
                 _this._retrievedPreviewedLinks(event);
             }, false);
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinks"));
             setInterval(function () { _this._showPreview(); }, 15);
         };
         HoverPreviewPlugin.prototype._updatePreviewedLinks = function (visitedLink) {
@@ -652,6 +656,13 @@ var RedditBoostPlugin;
                 this._previewedLinks = event.detail["RedditBoost_PreviewedLinks"];
             }
             this._updatePreviewedLinks();
+        };
+        HoverPreviewPlugin.prototype._retrievedPreviewedLinksSize = function (event) {
+            if (event.detail != null && event.detail > 1000000) {
+                var previewedLinksList = {};
+                previewedLinksList["RedditBoost_PreviewedLinks"] = this._previewedLinks;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StorePreviewedLinks", { "detail": previewedLinksList }));
+            }
         };
         HoverPreviewPlugin.prototype._showPreview = function () {
             if (this._processing)
