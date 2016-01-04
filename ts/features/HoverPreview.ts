@@ -1,5 +1,4 @@
 /// <reference path="../utils/Singleton.ts" />
-/// <reference path="../utils/Cookies.ts" />
 /// <reference path="../references/jquery.d.ts" />
 /// <reference path="../references/jquery.initialize.d.ts" />
 
@@ -47,6 +46,7 @@ module RedditBoostPlugin {
         private _requestedLinks: string[] = [];
         private _lastMousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _imageUpdates: number = 0;
+        private _previewedLinks: string[] = [];
         
         get init() { return this._init; }
         
@@ -82,8 +82,17 @@ module RedditBoostPlugin {
                 this._mousePosition.y = event.pageY;
             });
             
+            // Make sure previewed links is not too largest
+            window.addEventListener("RedditBoost_RetrievedPreviewedLinksSize", (event) => {
+                this._retrievedPreviewedLinksSize(event);
+            }, false);
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinksSize"));
+            
             // Update previewed links color
-            this._updatePreviewedLinks();
+            window.addEventListener("RedditBoost_RetrievedPreviewedLinks", (event) => {
+                this._retrievedPreviewedLinks(event);
+            }, false);
+            window.dispatchEvent(new CustomEvent("RedditBoost_GetPreviewedLinks"));
             
             // Call preview logic at ~60Hz (note that the lambda style syntax is to preserve 'this' context)
             setInterval(() => {this._showPreview();}, 15);
@@ -93,21 +102,47 @@ module RedditBoostPlugin {
          * Set links as previewed.
          */
         private _updatePreviewedLinks(visitedLink?: string) {
-            // First get the list of already visited links
-            let visitedLinksCookie = utils.Cookies.getCookie('RedditBoost_VisitedLinks');
-            if (visitedLinksCookie == null) visitedLinksCookie = "";
-            let visitedLinks = visitedLinksCookie.split(' '); // Space is disallowed in URLs, so it is used as a delimiter
-            
-            // If a new visited link is provided, update the cookie
-            if (visitedLink != null && visitedLinks.indexOf(visitedLink) < 0) {
-                visitedLinks.push(visitedLink);
-                utils.Cookies.setCookie('RedditBoost_VisitedLinks', visitedLinks.join(' '));
+            // If a new visited link is provided, update the list
+            if (this._previewedLinks.indexOf(visitedLink) < 0) {
+                this._previewedLinks.push(visitedLink);
+                
+                var previewedLinksList = {}; 
+                previewedLinksList["RedditBoost_PreviewedLinks"] = this._previewedLinks;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StorePreviewedLinks", { "detail": previewedLinksList }));
             }
             
             // Add visited class to all visited links.
-            visitedLinks.forEach(function(link) {
+            this._previewedLinks.forEach(function(link) {
                $("a[href='" + link +"']").addClass('RedditBoost_PreviewedLink'); // May want to add a reddit supported class instead
             });
+        }
+        
+        /**
+         * Updates previewed links from memory.
+         */
+        private _retrievedPreviewedLinks(event) {
+             if (!event.detail.hasOwnProperty("RedditBoost_PreviewedLinks")) {
+                // Create a new empty entry in storage
+                var previewedLinksList = {}; 
+                previewedLinksList["RedditBoost_PreviewedLinks"] = this._previewedLinks;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StorePreviewedLinks", { "detail": previewedLinksList }));
+            } else {
+                this._previewedLinks = event.detail["RedditBoost_PreviewedLinks"];
+            }
+            
+            this._updatePreviewedLinks();
+        }
+        
+        /**
+         * Wipes the previewed links memory if the size is near the limit.
+         */
+        private _retrievedPreviewedLinksSize(event) {
+            if (event.detail != null && event.detail > 1000000) {
+                // Create a new empty entry in storage
+                var previewedLinksList = {}; 
+                previewedLinksList["RedditBoost_PreviewedLinks"] = this._previewedLinks;
+                window.dispatchEvent(new CustomEvent("RedditBoost_StorePreviewedLinks", { "detail": previewedLinksList }));
+            }
         }
         
         /**

@@ -86,3 +86,26 @@ window.addEventListener("RedditBoost_GetSubredditBans", function(event) {
   chrome.storage.sync.get("RedditBoost_BlockedSubreddits", function (obj) {
     window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedSubredditBans", { "detail": obj }));
 });}, false);
+
+/**
+ * Stores the previewed links in chrome storage.
+ */
+window.addEventListener("RedditBoost_StorePreviewedLinks", function(event) {
+  chrome.storage.local.set(event.detail, function() {
+});}, false);
+
+/**
+ * Returns the previewed links from chrome storage.
+ */
+window.addEventListener("RedditBoost_GetPreviewedLinks", function(event) {
+  chrome.storage.local.get("RedditBoost_PreviewedLinks", function (obj) {
+    window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedPreviewedLinks", { "detail": obj }));
+});}, false);
+
+/**
+ * Returns the number of bytes in use for previewed links.
+ */
+window.addEventListener("RedditBoost_GetPreviewedLinksSize", function(event) {
+  chrome.storage.local.getBytesInUse("RedditBoost_PreviewedLinks", function (size) {
+    window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedPreviewedLinksSize", { "detail": size }));
+});}, false);
