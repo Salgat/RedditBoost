@@ -584,6 +584,7 @@ var RedditBoostPlugin;
                                 <source src='' id='RedditBoost_imageMp4'	type='video/mp4'>																		\
                                 </video>																												";
             this._failedLoading = "<div id='RedditBoost_failedLoading'>X</div>";
+            this._previewDelay = 350;
             this._processing = false;
             this._imageCache = {};
             this._thumbnailCache = {};
@@ -595,6 +596,7 @@ var RedditBoostPlugin;
             this._lastMousePosition = { x: 0, y: 0 };
             this._imageUpdates = 0;
             this._previewedLinks = [];
+            this._lastLink = { link: "", time: 0 };
         }
         Object.defineProperty(HoverPreviewPlugin.prototype, "init", {
             get: function () { return this._init; },
@@ -671,7 +673,25 @@ var RedditBoostPlugin;
             var hoveredLink = $('a.title:hover, form a:hover').first();
             var hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
-                var linkType = this._getLinkType($(hoveredLink).attr("href"));
+                var link = $(hoveredLink).attr("href");
+                var currentTime = new Date().getTime();
+                if (this._lastLink.link != link) {
+                    this._lastLink.link = link;
+                    this._lastLink.time = currentTime;
+                    $('#RedditBoost_imagePopup').hide();
+                    this._processing = false;
+                    return;
+                }
+                else {
+                    if (currentTime - this._lastLink.time > this._previewDelay) {
+                    }
+                    else {
+                        $('#RedditBoost_imagePopup').hide();
+                        this._processing = false;
+                        return;
+                    }
+                }
+                var linkType = this._getLinkType(link);
                 linkType = this._preProcessLinkType(linkType);
                 if (this._isSupported(linkType)) {
                     this._tryPreview(linkType);

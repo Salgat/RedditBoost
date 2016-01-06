@@ -31,6 +31,7 @@ module RedditBoostPlugin {
                                 </video>																												";
                                 
         private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
+        private _previewDelay: number = 350;
                             
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
@@ -47,6 +48,7 @@ module RedditBoostPlugin {
         private _lastMousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _imageUpdates: number = 0;
         private _previewedLinks: string[] = [];
+        private _lastLink: {link: string, time: number} = {link: "", time: 0};
         
         get init() { return this._init; }
         
@@ -157,8 +159,27 @@ module RedditBoostPlugin {
             let hoveredLink = $('a.title:hover, form a:hover').first();
             let hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
+                // First check that the mouse hovered for a given time first
+                let link = $(hoveredLink).attr("href");
+                let currentTime = new Date().getTime();
+                if (this._lastLink.link != link) {
+                    this._lastLink.link = link;
+                    this._lastLink.time = currentTime;
+                    $('#RedditBoost_imagePopup').hide();
+                    this._processing = false;
+                    return;
+                } else {
+                    if (currentTime - this._lastLink.time > this._previewDelay) {
+                        // Can show preview
+                    } else {
+                        $('#RedditBoost_imagePopup').hide();
+                        this._processing = false;
+                        return;
+                    }
+                }
+                
                 // Get link type and attempt to display if a supported media format
-                let linkType =  this._getLinkType($(hoveredLink).attr("href"));
+                let linkType =  this._getLinkType(link);
                 linkType = this._preProcessLinkType(linkType);
                 
                 if (this._isSupported(linkType)) {
