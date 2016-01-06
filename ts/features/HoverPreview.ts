@@ -159,6 +159,8 @@ module RedditBoostPlugin {
             if (hoveredLink.length > 0) {
                 // Get link type and attempt to display if a supported media format
                 let linkType =  this._getLinkType($(hoveredLink).attr("href"));
+                linkType = this._preProcessLinkType(linkType);
+                
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
                     this._tryPreview(linkType);
@@ -189,6 +191,19 @@ module RedditBoostPlugin {
             }
             
             this._processing = false;
+        }
+        
+        /**
+         * Change the linktype based on its current state (only if necessary).
+         */
+        private _preProcessLinkType(linkType: {link: string, extension: string, source: string, fileName: string}) : {link: string, extension: string, source: string, fileName: string} {
+            if (linkType.extension == 'gif' && linkType.source == 'imgur.com') {
+                linkType.link = linkType.link.replace('.gif', '');
+                linkType.fileName = linkType.fileName.replace('.gif', '');
+                linkType.extension = '';
+            }
+            
+            return linkType;
         }
         
         /**
@@ -367,7 +382,7 @@ module RedditBoostPlugin {
          * Displays img type given provided src.
          */
         private _displayImage(link: string) : void {
-            if ((this._getExtension(link) == 'gif' || this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
+            if ((this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
                 // Imgur Gifs can be automatically played as gifv
                 // TODO: Cannot do this with static Gifs, need to determine this before hand
                 let name = HoverPreviewPlugin._getFileName(link).split('.')[0];
@@ -689,7 +704,11 @@ module RedditBoostPlugin {
             window.addEventListener("RedditBoost_RetrievedImgurData", (event: any) => {
                 let hash = event.detail["image"]["image"]["hash"].toLowerCase();
                 let imageUrl = event.detail["image"]["links"]["original"];
+                let animated = event.detail["image"]["image"]["animated"];
                 if (imageUrl != null) {
+                    if (imageUrl.toLowerCase().indexOf(".gif") >= 0 && animated == "true") {
+                        imageUrl = imageUrl.replace(".gif", ".gifv");
+                    }
                     this._imageCache[hash] = {source: 'imgur.com', imgUrl: imageUrl, mp4Url: null, gifUrl: null, webmUrl: null};
                 } else {
                     this._imageCache[hash] = {source: 'imgur.com', imgUrl: null, mp4Url: null, gifUrl: null, webmUrl: null};

@@ -672,6 +672,7 @@ var RedditBoostPlugin;
             var hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
                 var linkType = this._getLinkType($(hoveredLink).attr("href"));
+                linkType = this._preProcessLinkType(linkType);
                 if (this._isSupported(linkType)) {
                     this._tryPreview(linkType);
                     this._adjustPreviewPopup();
@@ -700,6 +701,14 @@ var RedditBoostPlugin;
                 $('#RedditBoost_imagePopup').hide();
             }
             this._processing = false;
+        };
+        HoverPreviewPlugin.prototype._preProcessLinkType = function (linkType) {
+            if (linkType.extension == 'gif' && linkType.source == 'imgur.com') {
+                linkType.link = linkType.link.replace('.gif', '');
+                linkType.fileName = linkType.fileName.replace('.gif', '');
+                linkType.extension = '';
+            }
+            return linkType;
         };
         HoverPreviewPlugin.prototype._getLinkType = function (linkHref) {
             var link = linkHref;
@@ -818,7 +827,7 @@ var RedditBoostPlugin;
         };
         HoverPreviewPlugin.prototype._displayImage = function (link) {
             var _this = this;
-            if ((this._getExtension(link) == 'gif' || this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
+            if ((this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
                 var name_2 = HoverPreviewPlugin._getFileName(link).split('.')[0];
                 this._displayGifv(name_2, { source: HoverPreviewPlugin._getDomain(link), imgUrl: null, mp4Url: "//i.imgur.com/" + name_2 + ".mp4", webmUrl: "//i.imgur.com/" + name_2 + ".webm", gifUrl: null });
                 return;
@@ -1049,7 +1058,11 @@ var RedditBoostPlugin;
             window.addEventListener("RedditBoost_RetrievedImgurData", function (event) {
                 var hash = event.detail["image"]["image"]["hash"].toLowerCase();
                 var imageUrl = event.detail["image"]["links"]["original"];
+                var animated = event.detail["image"]["image"]["animated"];
                 if (imageUrl != null) {
+                    if (imageUrl.toLowerCase().indexOf(".gif") >= 0 && animated == "true") {
+                        imageUrl = imageUrl.replace(".gif", ".gifv");
+                    }
                     _this._imageCache[hash] = { source: 'imgur.com', imgUrl: imageUrl, mp4Url: null, gifUrl: null, webmUrl: null };
                 }
                 else {
