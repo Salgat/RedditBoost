@@ -537,25 +537,28 @@ module RedditBoostPlugin {
             
             if (region == Region.Left) {
                 // Display to the left of the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x-popupWidth-10});
+                // Get difference between mouse and top, if greater than zero, move down to mouse
+                let difference = this._mousePosition.y - (popupHeight + $(window).scrollTop());
+                let top = $(window).scrollTop();
+                if (difference > 10) {
+                    top += difference;
+                }
+                $('#RedditBoost_imagePopup').offset({ top: top, left: this._mousePosition.x-popupWidth-10});
             } else if (region == Region.Right) {
                 // Display to the right of the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+20});
+                // Get difference between mouse and top, if greater than zero, move down to mouse
+                let difference = this._mousePosition.y - (popupHeight + $(window).scrollTop());
+                let top = $(window).scrollTop();
+                if (difference > 10) {
+                    top += difference;
+                }
+                 $('#RedditBoost_imagePopup').offset({ top: top, left: this._mousePosition.x+20});
             } else if (region == Region.Above) {
                 // Display above the mouse
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y-popupHeight-5, left: 10});
             } else {
                 // Display below the mouse
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y+10, left: 0});
-            } // TODO: Fix above and below popup offset
-            
-            // Center the popup either vertically or horizontally
-            if (region == Region.Above || region == Region.Below) {
-                // Center horizontally
-                this._centerPopupHorizontally(popupWidth);
-            } else {
-                // Center vertically
-                this._centerPopupVertically(popupHeight);
             }
             
             // Update loading animation position

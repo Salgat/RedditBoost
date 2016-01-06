@@ -928,22 +928,26 @@ var RedditBoostPlugin;
             var region = this._findMostSpace(this._mousePosition);
             this._adjustPopupSize(popupWidth, popupHeight, region);
             if (region == Region.Left) {
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x - popupWidth - 10 });
+                var difference = this._mousePosition.y - (popupHeight + $(window).scrollTop());
+                var top_1 = $(window).scrollTop();
+                if (difference > 10) {
+                    top_1 += difference;
+                }
+                $('#RedditBoost_imagePopup').offset({ top: top_1, left: this._mousePosition.x - popupWidth - 10 });
             }
             else if (region == Region.Right) {
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x + 20 });
+                var difference = this._mousePosition.y - (popupHeight + $(window).scrollTop());
+                var top_2 = $(window).scrollTop();
+                if (difference > 10) {
+                    top_2 += difference;
+                }
+                $('#RedditBoost_imagePopup').offset({ top: top_2, left: this._mousePosition.x + 20 });
             }
             else if (region == Region.Above) {
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y - popupHeight - 5, left: 10 });
             }
             else {
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y + 10, left: 0 });
-            }
-            if (region == Region.Above || region == Region.Below) {
-                this._centerPopupHorizontally(popupWidth);
-            }
-            else {
-                this._centerPopupVertically(popupHeight);
             }
             var display = $("#RedditBoost_loadingAnimation").css('display');
             if ($("#RedditBoost_loadingAnimation").css('display') == 'block') {
