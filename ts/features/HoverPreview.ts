@@ -31,6 +31,7 @@ module RedditBoostPlugin {
                                 </video>																												";
                                 
         private _failedLoading: string = "<div id='RedditBoost_failedLoading'>X</div>";
+        private _previewDelay: number = 350;
                             
         private _processing: boolean = false;
         private _supportedMediaPattern: RegExp;
@@ -47,6 +48,7 @@ module RedditBoostPlugin {
         private _lastMousePosition: {x: number, y: number} = {x: 0, y: 0};
         private _imageUpdates: number = 0;
         private _previewedLinks: string[] = [];
+        private _lastLink: {link: string, time: number} = {link: "", time: 0};
         
         get init() { return this._init; }
         
@@ -157,8 +159,29 @@ module RedditBoostPlugin {
             let hoveredLink = $('a.title:hover, form a:hover').first();
             let hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
+                // First check that the mouse hovered for a given time first
+                let link = $(hoveredLink).attr("href");
+                let currentTime = new Date().getTime();
+                if (this._lastLink.link != link) {
+                    this._lastLink.link = link;
+                    this._lastLink.time = currentTime;
+                    $('#RedditBoost_imagePopup').hide();
+                    this._processing = false;
+                    return;
+                } else {
+                    if (currentTime - this._lastLink.time > this._previewDelay) {
+                        // Can show preview
+                    } else {
+                        $('#RedditBoost_imagePopup').hide();
+                        this._processing = false;
+                        return;
+                    }
+                }
+                
                 // Get link type and attempt to display if a supported media format
-                let linkType =  this._getLinkType($(hoveredLink).attr("href"));
+                let linkType =  this._getLinkType(link);
+                linkType = this._preProcessLinkType(linkType);
+                
                 if (this._isSupported(linkType)) {
                     // Either start loading the preview, or do an async call to get the information needed to preview
                     this._tryPreview(linkType);
@@ -189,6 +212,19 @@ module RedditBoostPlugin {
             }
             
             this._processing = false;
+        }
+        
+        /**
+         * Change the linktype based on its current state (only if necessary).
+         */
+        private _preProcessLinkType(linkType: {link: string, extension: string, source: string, fileName: string}) : {link: string, extension: string, source: string, fileName: string} {
+            if (linkType.extension == 'gif' && linkType.source == 'imgur.com') {
+                linkType.link = linkType.link.replace('.gif', '');
+                linkType.fileName = linkType.fileName.replace('.gif', '');
+                linkType.extension = '';
+            }
+            
+            return linkType;
         }
         
         /**
@@ -367,7 +403,7 @@ module RedditBoostPlugin {
          * Displays img type given provided src.
          */
         private _displayImage(link: string) : void {
-            if ((this._getExtension(link) == 'gif' || this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
+            if ((this._getExtension(link) == 'gifv') && HoverPreviewPlugin._getDomain(link) == 'imgur.com') {
                 // Imgur Gifs can be automatically played as gifv
                 // TODO: Cannot do this with static Gifs, need to determine this before hand
                 let name = HoverPreviewPlugin._getFileName(link).split('.')[0];
@@ -522,25 +558,28 @@ module RedditBoostPlugin {
             
             if (region == Region.Left) {
                 // Display to the left of the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x-popupWidth-10});
+                // Get difference between mouse and top, if greater than zero, move down to mouse
+                let difference = this._mousePosition.y - (popupHeight + $(window).scrollTop());
+                let top = $(window).scrollTop();
+                if (difference > 10) {
+                    top += difference;
+                }
+                $('#RedditBoost_imagePopup').offset({ top: top, left: this._mousePosition.x-popupWidth-10});
             } else if (region == Region.Right) {
                 // Display to the right of the mouse
-                $('#RedditBoost_imagePopup').offset({ top: $(window).scrollTop(), left: this._mousePosition.x+20});
+                // Get difference between mouse and top, if greater than zero, move down to mouse
+                let difference = this._mousePosition.y - (popupHeight + $(window).scrollTop());
+                let top = $(window).scrollTop();
+                if (difference > 10) {
+                    top += difference;
+                }
+                 $('#RedditBoost_imagePopup').offset({ top: top, left: this._mousePosition.x+20});
             } else if (region == Region.Above) {
                 // Display above the mouse
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y-popupHeight-5, left: 10});
             } else {
                 // Display below the mouse
                 $('#RedditBoost_imagePopup').offset({ top: this._mousePosition.y+10, left: 0});
-            } // TODO: Fix above and below popup offset
-            
-            // Center the popup either vertically or horizontally
-            if (region == Region.Above || region == Region.Below) {
-                // Center horizontally
-                this._centerPopupHorizontally(popupWidth);
-            } else {
-                // Center vertically
-                this._centerPopupVertically(popupHeight);
             }
             
             // Update loading animation position
@@ -606,8 +645,12 @@ module RedditBoostPlugin {
             }
             $('.RedditBoost_Content').css("max-height", maxHeight);
             $('.RedditBoost_Content').css("max-width", maxWidth);
-            $('#RedditBoost_imagePopupTitle').css("max-height", maxHeight);
-            $('#RedditBoost_imagePopupTitle').css("max-width", maxWidth);
+            
+            if ($("#RedditBoost_loadingAnimation").css('display') != 'block') {
+                $('#RedditBoost_imagePopupTitle').css("max-width", $('.RedditBoost_Content').width());
+            } else {
+                $('#RedditBoost_imagePopupTitle').css("max-width", 180);
+            }
         }
         
         /**
@@ -689,7 +732,11 @@ module RedditBoostPlugin {
             window.addEventListener("RedditBoost_RetrievedImgurData", (event: any) => {
                 let hash = event.detail["image"]["image"]["hash"].toLowerCase();
                 let imageUrl = event.detail["image"]["links"]["original"];
+                let animated = event.detail["image"]["image"]["animated"];
                 if (imageUrl != null) {
+                    if (imageUrl.toLowerCase().indexOf(".gif") >= 0 && animated == "true") {
+                        imageUrl = imageUrl.replace(".gif", ".gifv");
+                    }
                     this._imageCache[hash] = {source: 'imgur.com', imgUrl: imageUrl, mp4Url: null, gifUrl: null, webmUrl: null};
                 } else {
                     this._imageCache[hash] = {source: 'imgur.com', imgUrl: null, mp4Url: null, gifUrl: null, webmUrl: null};
