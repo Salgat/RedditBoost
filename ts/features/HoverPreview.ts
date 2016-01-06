@@ -624,8 +624,12 @@ module RedditBoostPlugin {
             }
             $('.RedditBoost_Content').css("max-height", maxHeight);
             $('.RedditBoost_Content').css("max-width", maxWidth);
-            $('#RedditBoost_imagePopupTitle').css("max-height", maxHeight);
-            $('#RedditBoost_imagePopupTitle').css("max-width", maxWidth);
+            
+            if ($("#RedditBoost_loadingAnimation").css('display') != 'block') {
+                $('#RedditBoost_imagePopupTitle').css("max-width", $('.RedditBoost_Content').width());
+            } else {
+                $('#RedditBoost_imagePopupTitle').css("max-width", 180);
+            }
         }
         
         /**
