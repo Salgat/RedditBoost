@@ -694,8 +694,12 @@ module RedditBoostPlugin {
             if (this._requestedLinks.indexOf(fileName) >= 0) return;
             this._requestedLinks.push(fileName);
             
-            let imageApiUrl = "//api.imgur.com/2/image/" + fileName + ".json";
-            $.get(imageApiUrl)
+            let imageApiUrl = "//api.imgur.com/3/image/" + fileName;
+            $.ajax({
+                url: imageApiUrl,
+                type: "GET",
+                headers: {"Authorization": "Client-ID 501278d4fb95e62"}
+            })
             .done((data) => {
                 window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedImgurData", { "detail": data }));
             });
@@ -730,9 +734,9 @@ module RedditBoostPlugin {
          */
         private _handleImgurResponse() {
             window.addEventListener("RedditBoost_RetrievedImgurData", (event: any) => {
-                let hash = event.detail["image"]["image"]["hash"].toLowerCase();
-                let imageUrl = event.detail["image"]["links"]["original"];
-                let animated = event.detail["image"]["image"]["animated"];
+                let hash = event.detail["data"]["id"].toLowerCase();
+                let imageUrl = event.detail["data"]["link"];
+                let animated = event.detail["data"]["animated"];
                 if (imageUrl != null) {
                     if (imageUrl.toLowerCase().indexOf(".gif") >= 0 && animated == "true") {
                         imageUrl = imageUrl.replace(".gif", ".gifv");

@@ -1052,8 +1052,12 @@ var RedditBoostPlugin;
             if (this._requestedLinks.indexOf(fileName) >= 0)
                 return;
             this._requestedLinks.push(fileName);
-            var imageApiUrl = "//api.imgur.com/2/image/" + fileName + ".json";
-            $.get(imageApiUrl)
+            var imageApiUrl = "//api.imgur.com/3/image/" + fileName;
+            $.ajax({
+                url: imageApiUrl,
+                type: "GET",
+                headers: { "Authorization": "Client-ID 501278d4fb95e62" }
+            })
                 .done(function (data) {
                 window.dispatchEvent(new CustomEvent("RedditBoost_RetrievedImgurData", { "detail": data }));
             });
@@ -1084,9 +1088,9 @@ var RedditBoostPlugin;
         HoverPreviewPlugin.prototype._handleImgurResponse = function () {
             var _this = this;
             window.addEventListener("RedditBoost_RetrievedImgurData", function (event) {
-                var hash = event.detail["image"]["image"]["hash"].toLowerCase();
-                var imageUrl = event.detail["image"]["links"]["original"];
-                var animated = event.detail["image"]["image"]["animated"];
+                var hash = event.detail["data"]["id"].toLowerCase();
+                var imageUrl = event.detail["data"]["link"];
+                var animated = event.detail["data"]["animated"];
                 if (imageUrl != null) {
                     if (imageUrl.toLowerCase().indexOf(".gif") >= 0 && animated == "true") {
                         imageUrl = imageUrl.replace(".gif", ".gifv");
