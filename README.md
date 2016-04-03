@@ -1,9 +1,6 @@
 # RedditBoost
 A set of simple features to enhance reddit.
 
-### Deprecation Notice
-This project has been unlisted from the Chrome store for the time being, due to issues with the Imgur API that affect the Hover Preview feature (Imgur API v2 has been deprecated and v3 requires an account for each consumer). Unfortunately this is a pretty major feature for the extension, and until I find a solution, I advise not using this extension (unless you want it for its other features). I apologize for this issue.
-
 <p align="center"><a href="https://chrome.google.com/webstore/detail/redditboost/mjkfiabnnkmmcifffhekooamedohoojd"><img src ="https://github.com/Salgat/RedditBoost/blob/master/doc/extensionBanner.png" /></a></p>
 
 ## Running
