@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var utils;
 (function (utils) {
     var Singleton = (function () {
@@ -14,14 +19,9 @@ var utils;
             configurable: true
         });
         return Singleton;
-    })();
+    }());
     utils.Singleton = Singleton;
 })(utils || (utils = {}));
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var RedditBoostPlugin;
 (function (RedditBoostPlugin) {
     var TagUserPlugin = (function (_super) {
@@ -165,7 +165,7 @@ var RedditBoostPlugin;
 							</div>																											\
 						</div>                                                                                                             ";
         return TagUserPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.TagUser = new TagUserPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
@@ -289,7 +289,7 @@ var RedditBoostPlugin;
             }
         };
         return BanUserCommentsPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.BanUserComments = new BanUserCommentsPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
@@ -379,7 +379,7 @@ var RedditBoostPlugin;
             return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-username='" + userName + "'>" + textToAdd + "</a>";
         };
         return BanUserSubmissionsPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.BanUserSubmissions = new BanUserSubmissionsPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
@@ -472,7 +472,7 @@ var RedditBoostPlugin;
             return "<a href='javascript:void(0)' class='" + classToAdd + " RedditBoostTaglineEntry" + "' data-subreddit='" + subreddit + "'>" + textToAdd + "</a>";
         };
         return BanSubredditsPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.BanSubreddits = new BanSubredditsPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
@@ -548,7 +548,7 @@ var RedditBoostPlugin;
             }
         };
         return BanCustomCssPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.BanCustomCss = new BanCustomCssPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
@@ -1114,7 +1114,7 @@ var RedditBoostPlugin;
             }, false);
         };
         return HoverPreviewPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.HoverPreview = new HoverPreviewPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoostPlugin;
@@ -1166,7 +1166,7 @@ var RedditBoostPlugin;
             $("<a>").attr("href", url).attr("target", "_blank")[0].click();
         };
         return MirrorPlugin;
-    })(utils.Singleton);
+    }(utils.Singleton));
     RedditBoostPlugin.Mirror = new MirrorPlugin();
 })(RedditBoostPlugin || (RedditBoostPlugin = {}));
 var RedditBoost;

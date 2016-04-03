@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
         "removeComments": true,
         "preserveConstEnums": true,
         "out": "js/Main.js",
