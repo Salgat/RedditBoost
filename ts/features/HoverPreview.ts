@@ -156,7 +156,7 @@ module RedditBoostPlugin {
             this._processing = true;
             
             // Check if mouse is hovering over a link
-            let hoveredLink = $('a.title:hover, form a:hover').first();
+            let hoveredLink = $('a.title:hover, form a:hover, .entry .md a:hover').first();
             let hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
                 // First check that the mouse hovered for a given time first

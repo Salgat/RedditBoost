@@ -670,7 +670,7 @@ var RedditBoostPlugin;
             if (this._processing)
                 return;
             this._processing = true;
-            var hoveredLink = $('a.title:hover, form a:hover').first();
+            var hoveredLink = $('a.title:hover, form a:hover, .entry .md a:hover').first();
             var hoveredThumbnail = $('.link a.thumbnail:hover').first();
             if (hoveredLink.length > 0) {
                 var link = $(hoveredLink).attr("href");

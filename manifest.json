@@ -8,7 +8,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://www.reddit.com/r/*", "*://www.reddit.com/?*", "*://www.reddit.com/", "*://www.reddit.com/new*", "*://www.reddit.com/hot*", "*://www.reddit.com/top*", "*://www.reddit.com/rising*", "*://www.reddit.com/controversial*", "*://www.reddit.com/gilded*", "*://www.reddit.com/ads*"],
+      "matches": ["*://www.reddit.com/r/*", "*://www.reddit.com/?*", "*://www.reddit.com/", "*://www.reddit.com/new*", "*://www.reddit.com/hot*", "*://www.reddit.com/top*", "*://www.reddit.com/rising*", "*://www.reddit.com/controversial*", "*://www.reddit.com/gilded*", "*://www.reddit.com/ads*", "*://www.reddit.com/message/*", "*://www.reddit.com/user/*"],
       "css": ["styles.css"],
       "js": ["onLoad.js"]
     }
